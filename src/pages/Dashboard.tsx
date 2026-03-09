@@ -16,15 +16,23 @@ interface App {
   created_at: string;
 }
 
+interface SidebarCounts {
+  apps: number;
+  products: number;
+}
+
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [apps, setApps] = useState<App[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [copiedAppId, setCopiedAppId] = useState<string | null>(null);
+  const [sidebarCounts, setSidebarCounts] = useState<SidebarCounts>({ apps: 0, products: 0 });
   const { user, signOut, subscription, checkSubscription } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
