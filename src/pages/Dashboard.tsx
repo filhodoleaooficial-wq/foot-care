@@ -330,14 +330,51 @@ const Dashboard = () => {
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                        <ExternalLink className="h-3 w-3" /> Link
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => {
+                          const url = `${window.location.origin}/app/${app.id}`;
+                          navigator.clipboard.writeText(url);
+                          setCopiedAppId(app.id);
+                          toast({ title: "Link copiado!", description: url });
+                          setTimeout(() => setCopiedAppId(null), 2000);
+                        }}
+                      >
+                        {copiedAppId === app.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        {copiedAppId === app.id ? "Copiado" : "Link"}
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => navigate(`/create-app?appId=${app.id}`)}
+                      >
                         <Package className="h-3 w-3" /> Produtos
                       </Button>
-                      <Button variant="hero" size="sm" className="gap-1.5 text-xs">
-                        <Rocket className="h-3 w-3" /> Publicar
+                      <Button
+                        variant="hero"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={async () => {
+                          const newStatus = app.status === "published" ? "draft" : "published";
+                          const { error } = await supabase
+                            .from("apps")
+                            .update({ status: newStatus })
+                            .eq("id", app.id);
+                          if (error) {
+                            toast({ title: "Erro", description: error.message, variant: "destructive" });
+                          } else {
+                            setApps((prev) =>
+                              prev.map((a) => (a.id === app.id ? { ...a, status: newStatus } : a))
+                            );
+                            toast({ title: newStatus === "published" ? "App publicado!" : "App despublicado" });
+                          }
+                        }}
+                      >
+                        <Rocket className="h-3 w-3" />
+                        {app.status === "published" ? "Despublicar" : "Publicar"}
                       </Button>
                     </div>
                   </motion.div>
