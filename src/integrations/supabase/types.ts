@@ -164,36 +164,54 @@ export type Database = {
       }
       modules: {
         Row: {
+          content_html: string | null
+          content_type: string
+          content_url: string | null
           cover_url: string | null
           created_at: string
           description: string | null
           id: string
           is_published: boolean
+          open_directly: boolean
           product_id: string
+          release_type: string
+          release_value: string | null
           sort_order: number
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          content_html?: string | null
+          content_type?: string
+          content_url?: string | null
           cover_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
           is_published?: boolean
+          open_directly?: boolean
           product_id: string
+          release_type?: string
+          release_value?: string | null
           sort_order?: number
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          content_html?: string | null
+          content_type?: string
+          content_url?: string | null
           cover_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
           is_published?: boolean
+          open_directly?: boolean
           product_id?: string
+          release_type?: string
+          release_value?: string | null
           sort_order?: number
           title?: string
           updated_at?: string
@@ -212,42 +230,69 @@ export type Database = {
       products: {
         Row: {
           app_id: string
+          column_count: number
           cover_url: string | null
           created_at: string
           description: string | null
+          external_product_id: string | null
+          hidden_name: boolean
           id: string
           is_published: boolean
+          logo_locked_url: string | null
+          logo_unlocked_url: string | null
           name: string
           offer_type: string
           price: number | null
+          redirect_to_sales: boolean
+          release_type: string
+          release_value: string | null
+          sales_page_url: string | null
           sort_order: number
           updated_at: string
           user_id: string
         }
         Insert: {
           app_id: string
+          column_count?: number
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          external_product_id?: string | null
+          hidden_name?: boolean
           id?: string
           is_published?: boolean
+          logo_locked_url?: string | null
+          logo_unlocked_url?: string | null
           name: string
           offer_type?: string
           price?: number | null
+          redirect_to_sales?: boolean
+          release_type?: string
+          release_value?: string | null
+          sales_page_url?: string | null
           sort_order?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           app_id?: string
+          column_count?: number
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          external_product_id?: string | null
+          hidden_name?: boolean
           id?: string
           is_published?: boolean
+          logo_locked_url?: string | null
+          logo_unlocked_url?: string | null
           name?: string
           offer_type?: string
           price?: number | null
+          redirect_to_sales?: boolean
+          release_type?: string
+          release_value?: string | null
+          sales_page_url?: string | null
           sort_order?: number
           updated_at?: string
           user_id?: string
