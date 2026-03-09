@@ -59,8 +59,15 @@ const Dashboard = () => {
       console.error("Error fetching apps:", error);
     } else {
       setApps(data || []);
+      setSidebarCounts((prev) => ({ ...prev, apps: (data || []).length }));
     }
     setLoadingApps(false);
+
+    // Fetch product count
+    const { count } = await supabase
+      .from("products")
+      .select("*", { count: "exact", head: true });
+    setSidebarCounts((prev) => ({ ...prev, products: count || 0 }));
   };
 
   const deleteApp = async (id: string) => {
