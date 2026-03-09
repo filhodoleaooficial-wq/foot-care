@@ -28,7 +28,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/app/new" element={<ProtectedRoute><AppCreation /></ProtectedRoute>} />
+            <Route path="/create-app" element={<ProtectedRoute><AppCreation /></ProtectedRoute>} />
 
             {/* Client-facing app routes */}
             <Route path="/app/:appId" element={<ClientAppLayout />}>
