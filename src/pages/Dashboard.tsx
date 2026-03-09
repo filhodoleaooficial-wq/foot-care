@@ -153,7 +153,15 @@ const Dashboard = () => {
           </button>
         </div>
         <nav className="mt-4 space-y-1 px-3">
-          {sidebarItems.map((item) => (
+          {[
+            { icon: LayoutDashboard, label: "Meus Apps", href: "/dashboard", count: sidebarCounts.apps },
+            { icon: ShoppingBag, label: "Produtos", href: "/dashboard", count: sidebarCounts.products },
+            { icon: BarChart3, label: "Vendas", href: "/dashboard" },
+            { icon: Link2, label: "Integrações", href: "/dashboard" },
+            { icon: Users, label: "Meus Clientes", href: "/dashboard" },
+            { icon: HelpCircle, label: "Suporte", href: "/dashboard" },
+            { icon: Settings, label: "Configurações", href: "/dashboard" },
+          ].map((item) => (
             <Link
               key={item.label}
               to={item.href}
@@ -162,6 +170,11 @@ const Dashboard = () => {
             >
               <item.icon className="h-4 w-4" />
               {item.label}
+              {item.count !== undefined && item.count > 0 && (
+                <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                  {item.count}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
