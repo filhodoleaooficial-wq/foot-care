@@ -8,6 +8,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import ProductModal from "@/components/ProductModal";
 import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -48,6 +63,101 @@ const offerTypeLabels: Record<string, string> = {
   bonus: "Bônus",
 };
 
+/* ─── Sortable Product Card ─── */
+const SortableProductCard = ({
+  product,
+  onTogglePublish,
+  onEdit,
+  onDelete,
+}: {
+  product: Product;
+  onTogglePublish: (p: Product) => void;
+  onEdit: (p: Product) => void;
+  onDelete: (id: string) => void;
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: product.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.85 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group rounded-xl border bg-card p-5 shadow-card transition-shadow hover:shadow-card-hover ${isDragging ? "ring-2 ring-primary/40" : ""}`}
+    >
+      <div className="flex items-start gap-4">
+        <button
+          {...attributes}
+          {...listeners}
+          className="mt-1 cursor-grab touch-none text-muted-foreground/40 hover:text-muted-foreground active:cursor-grabbing"
+        >
+          <GripVertical className="h-5 w-5" />
+        </button>
+
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-accent text-primary">
+          {product.logo_unlocked_url ? (
+            <img src={product.logo_unlocked_url} alt="" className="h-full w-full rounded-xl object-cover" />
+          ) : (
+            <Package className="h-6 w-6" />
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-bold text-foreground truncate">{product.name}</h3>
+            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+              {offerTypeLabels[product.offer_type] || product.offer_type}
+            </span>
+            <span
+              className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                product.is_published ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {product.is_published ? "Publicado" : "Rascunho"}
+            </span>
+          </div>
+          {product.description && (
+            <p className="mt-1 text-sm text-muted-foreground truncate">{product.description}</p>
+          )}
+          <p className="mt-1 text-xs text-muted-foreground">
+            Ordem: {product.sort_order} · {product.column_count} coluna{product.column_count > 1 ? "s" : ""}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onTogglePublish(product)}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            title={product.is_published ? "Despublicar" : "Publicar"}
+          >
+            {product.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </button>
+          <button
+            onClick={() => onEdit(product)}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => onDelete(product.id)}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Main Page ─── */
 const ProductsManagement = () => {
   const { appId } = useParams<{ appId: string }>();
   const navigate = useNavigate();
@@ -61,6 +171,10 @@ const ProductsManagement = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
   useEffect(() => {
     if (appId) {
       fetchApp();
@@ -69,11 +183,7 @@ const ProductsManagement = () => {
   }, [appId]);
 
   const fetchApp = async () => {
-    const { data } = await supabase
-      .from("apps")
-      .select("name")
-      .eq("id", appId!)
-      .single();
+    const { data } = await supabase.from("apps").select("name").eq("id", appId!).single();
     if (data) setAppName(data.name);
   };
 
@@ -84,12 +194,8 @@ const ProductsManagement = () => {
       .select("*")
       .eq("app_id", appId!)
       .order("sort_order", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching products:", error);
-    } else {
-      setProducts(data || []);
-    }
+    if (error) console.error("Error fetching products:", error);
+    else setProducts(data || []);
     setLoading(false);
   };
 
@@ -98,7 +204,6 @@ const ProductsManagement = () => {
       .from("products")
       .update({ is_published: !product.is_published })
       .eq("id", product.id);
-
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
@@ -118,6 +223,26 @@ const ProductsManagement = () => {
       toast({ title: "Produto excluído" });
     }
     setDeleteId(null);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = products.findIndex((p) => p.id === active.id);
+    const newIndex = products.findIndex((p) => p.id === over.id);
+    const reordered = arrayMove(products, oldIndex, newIndex).map((p, i) => ({
+      ...p,
+      sort_order: i,
+    }));
+
+    setProducts(reordered);
+
+    // Persist new order
+    const updates = reordered.map((p) =>
+      supabase.from("products").update({ sort_order: p.sort_order }).eq("id", p.id)
+    );
+    await Promise.all(updates);
   };
 
   const openEdit = (product: Product) => {
@@ -169,84 +294,24 @@ const ProductsManagement = () => {
             </Button>
           </motion.div>
         ) : (
-          <div className="space-y-4">
-            {products.map((product, i) => (
-              <motion.div
-                key={product.id}
-                className="group rounded-xl border bg-card p-5 shadow-card transition-all hover:shadow-card-hover"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="mt-1 text-muted-foreground/40">
-                    <GripVertical className="h-5 w-5" />
-                  </div>
-
-                  {/* Cover or icon */}
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-accent text-primary">
-                    {product.logo_unlocked_url ? (
-                      <img src={product.logo_unlocked_url} alt="" className="h-full w-full rounded-xl object-cover" />
-                    ) : (
-                      <Package className="h-6 w-6" />
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-foreground truncate">{product.name}</h3>
-                      <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                        {offerTypeLabels[product.offer_type] || product.offer_type}
-                      </span>
-                      <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          product.is_published
-                            ? "bg-green-100 text-green-700"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {product.is_published ? "Publicado" : "Rascunho"}
-                      </span>
-                    </div>
-                    {product.description && (
-                      <p className="mt-1 text-sm text-muted-foreground truncate">{product.description}</p>
-                    )}
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Ordem: {product.sort_order} · {product.column_count} coluna{product.column_count > 1 ? "s" : ""}
-                    </p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => togglePublish(product)}
-                      className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                      title={product.is_published ? "Despublicar" : "Publicar"}
-                    >
-                      {product.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </button>
-                    <button
-                      onClick={() => openEdit(product)}
-                      className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(product.id)}
-                      className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={products.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-4">
+                {products.map((product) => (
+                  <SortableProductCard
+                    key={product.id}
+                    product={product}
+                    onTogglePublish={togglePublish}
+                    onEdit={openEdit}
+                    onDelete={setDeleteId}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </main>
 
-      {/* Product Modal */}
       {user && appId && (
         <ProductModal
           open={modalOpen}
@@ -261,7 +326,6 @@ const ProductsManagement = () => {
         />
       )}
 
-      {/* Delete confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
