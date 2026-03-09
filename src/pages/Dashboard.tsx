@@ -349,7 +349,7 @@ const Dashboard = () => {
                         variant="outline"
                         size="sm"
                         className="gap-1.5 text-xs"
-                        onClick={() => navigate(`/create-app?appId=${app.id}`)}
+                        onClick={() => navigate(`/app/${app.id}/products`)}
                       >
                         <Package className="h-3 w-3" /> Produtos
                       </Button>
