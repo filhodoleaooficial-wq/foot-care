@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import AppCreation from "./pages/AppCreation";
 import ProductsManagement from "./pages/ProductsManagement";
+import WhatsAppPage from "./pages/WhatsAppPage";
 import ClientAppLayout from "./pages/client/ClientAppLayout";
 import ClientLogin from "./pages/client/ClientLogin";
 import ClientHome from "./pages/client/ClientHome";
