@@ -9,6 +9,7 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import AppCreation from "./pages/AppCreation";
+import ProductsManagement from "./pages/ProductsManagement";
 import ClientAppLayout from "./pages/client/ClientAppLayout";
 import ClientLogin from "./pages/client/ClientLogin";
 import ClientHome from "./pages/client/ClientHome";
