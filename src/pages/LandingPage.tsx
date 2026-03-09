@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Smartphone, Palette, Zap, Shield, BarChart3, Globe, Check } from "lucide-react";
 import logoImg from "@/assets/logo-pesaude.png";
 import heroImg from "@/assets/hero-image.jpg";
+import { useState } from "react";
 
 const features = [
   { icon: Smartphone, title: "Mobile-First", desc: "Apps otimizados para celular, instaláveis como PWA." },
@@ -14,13 +15,19 @@ const features = [
   { icon: Globe, title: "Multi-idioma", desc: "Português, Inglês e Espanhol disponíveis." },
 ];
 
-const plans = [
-  { name: "Básico", price: "R$ 47", period: "/mês", apps: "1 App", features: ["1 aplicativo", "Até 100 clientes", "Suporte por e-mail", "Personalização visual completa"] },
-  { name: "Pro", price: "R$ 97", period: "/mês", apps: "3 Apps", popular: true, features: ["3 aplicativos", "Até 500 clientes", "Suporte prioritário", "Integrações de pagamento", "Banners personalizados"] },
-  { name: "Scale", price: "R$ 197", period: "/mês", apps: "5 Apps", features: ["5 aplicativos", "Clientes ilimitados", "Suporte VIP", "Todas as integrações", "Webhooks avançados", "Multi-idioma"] },
+const planFeatures = [
+  "3 aplicativos",
+  "Até 500 clientes",
+  "Suporte prioritário",
+  "Personalização visual completa",
+  "Integrações de pagamento",
+  "Banners personalizados",
+  "Multi-idioma",
 ];
 
 const LandingPage = () => {
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
@@ -67,7 +74,7 @@ const LandingPage = () => {
             <div className="mt-8 flex flex-wrap gap-4">
               <Link to="/login?signup=true">
                 <Button variant="hero" size="lg" className="text-base px-8">
-                  Começar Gratuitamente
+                  Assinar Plano Pro
                 </Button>
               </Link>
               <a href="#features">
@@ -128,7 +135,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing - Single Pro Plan */}
       <section id="pricing" className="py-20 lg:py-28 bg-secondary/50">
         <div className="container mx-auto px-4">
           <motion.div
@@ -137,48 +144,62 @@ const LandingPage = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-extrabold text-foreground sm:text-4xl">Planos & Preços</h2>
+            <h2 className="text-3xl font-extrabold text-foreground sm:text-4xl">Plano Pro</h2>
             <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-              Escolha o plano ideal para o tamanho do seu negócio.
+              Tudo que você precisa para criar e gerenciar seus apps profissionais.
             </p>
           </motion.div>
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-            {plans.map((plan, i) => (
-              <motion.div
-                key={plan.name}
-                className={`relative rounded-2xl border bg-card p-8 shadow-card ${plan.popular ? "border-primary ring-2 ring-primary/20" : ""}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-primary rounded-full px-4 py-1 text-xs font-bold text-primary-foreground">
-                    Mais Popular
-                  </span>
-                )}
-                <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{plan.apps}</p>
-                <div className="mt-6">
-                  <span className="text-4xl font-extrabold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground">{plan.period}</span>
-                </div>
-                <ul className="mt-8 space-y-3">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-foreground">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/login?signup=true" className="block mt-8">
-                  <Button variant={plan.popular ? "hero" : "outline"} className="w-full">
-                    Escolher {plan.name}
-                  </Button>
-                </Link>
-              </motion.div>
-            ))}
+
+          {/* Billing toggle */}
+          <div className="mt-10 flex items-center justify-center gap-4">
+            <button
+              onClick={() => setBillingPeriod("monthly")}
+              className={`rounded-full px-5 py-2 text-sm font-bold transition-colors ${billingPeriod === "monthly" ? "gradient-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+            >
+              Mensal
+            </button>
+            <button
+              onClick={() => setBillingPeriod("yearly")}
+              className={`rounded-full px-5 py-2 text-sm font-bold transition-colors ${billingPeriod === "yearly" ? "gradient-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+            >
+              Anual
+              <span className="ml-2 rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">Economize 30%</span>
+            </button>
           </div>
+
+          <motion.div
+            className="mx-auto mt-12 max-w-md"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="relative rounded-2xl border-primary ring-2 ring-primary/20 bg-card p-8 shadow-card">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-primary rounded-full px-4 py-1 text-xs font-bold text-primary-foreground">
+                Plano Pro
+              </span>
+              <div className="mt-4 text-center">
+                <span className="text-5xl font-extrabold text-foreground">
+                  {billingPeriod === "monthly" ? "R$ 97,90" : "R$ 67,90"}
+                </span>
+                <span className="text-muted-foreground">
+                  {billingPeriod === "monthly" ? "/mês" : "/mês (cobrado anualmente)"}
+                </span>
+              </div>
+              <ul className="mt-8 space-y-3">
+                {planFeatures.map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-foreground">
+                    <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link to="/login?signup=true" className="block mt-8">
+                <Button variant="hero" className="w-full" size="lg">
+                  Assinar Agora
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
 
