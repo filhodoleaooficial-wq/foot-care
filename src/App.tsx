@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import AppCreation from "./pages/AppCreation";
 import ProductsManagement from "./pages/ProductsManagement";
+import WhatsAppPage from "./pages/WhatsAppPage";
 import ClientAppLayout from "./pages/client/ClientAppLayout";
 import ClientLogin from "./pages/client/ClientLogin";
 import ClientHome from "./pages/client/ClientHome";
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/create-app" element={<ProtectedRoute><AppCreation /></ProtectedRoute>} />
             <Route path="/app/:appId/products" element={<ProtectedRoute><ProductsManagement /></ProtectedRoute>} />
+            <Route path="/whatsapp" element={<ProtectedRoute><WhatsAppPage /></ProtectedRoute>} />
 
             {/* Client-facing app routes */}
             <Route path="/app/:appId" element={<ClientAppLayout />}>
