@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown } from "lucide-react";
+import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown, Copy, Check } from "lucide-react";
 import { useAuth, STRIPE_PRICES } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,16 +15,6 @@ interface App {
   primary_color: string;
   created_at: string;
 }
-
-const sidebarItems = [
-  { icon: LayoutDashboard, label: "Meus Apps", href: "/dashboard" },
-  { icon: ShoppingBag, label: "Produtos", href: "#" },
-  { icon: BarChart3, label: "Vendas", href: "#" },
-  { icon: Link2, label: "Integrações", href: "#" },
-  { icon: Users, label: "Meus Clientes", href: "#" },
-  { icon: HelpCircle, label: "Suporte", href: "#" },
-  { icon: Settings, label: "Configurações", href: "#" },
-];
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
