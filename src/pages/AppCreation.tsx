@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Upload, Palette, Home, Settings, Package, Layers, Plug, Rocket } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo-pesaude.png";
 
 const steps = [
@@ -27,11 +30,82 @@ const AppCreation = () => {
   const [visualStyle, setVisualStyle] = useState("original");
   const [showProgress, setShowProgress] = useState(true);
   const [description, setDescription] = useState("");
+  const [supportEmail, setSupportEmail] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [bgUrl, setBgUrl] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const bgInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const colors = ["#FF4B8B", "#6366F1", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#1A1A1A"];
 
   const next = () => setCurrentStep((s) => Math.min(s + 1, 5));
   const prev = () => setCurrentStep((s) => Math.max(s - 1, 0));
+
+  const uploadFile = async (file: File, folder: string) => {
+    const ext = file.name.split(".").pop();
+    const path = `${user!.id}/${folder}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("app-assets").upload(path, file);
+    if (error) throw error;
+    const { data } = supabase.storage.from("app-assets").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await uploadFile(file, "logos");
+      setLogoUrl(url);
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await uploadFile(file, "backgrounds");
+      setBgUrl(url);
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!appName.trim()) {
+      toast({ title: "Nome obrigatório", description: "Defina um nome para o app na etapa 'Dados Gerais'.", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("apps").insert({
+        user_id: user!.id,
+        name: appName,
+        description,
+        logo_url: logoUrl,
+        background_url: bgUrl,
+        primary_color: primaryColor,
+        welcome_text: welcomeText,
+        login_type: loginType,
+        visual_style: visualStyle,
+        show_progress: showProgress,
+        support_email: supportEmail || null,
+        status: "draft",
+      });
+      if (error) throw error;
+      toast({ title: "App criado com sucesso! 🎉" });
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-secondary/30">
@@ -104,8 +178,16 @@ const AppCreation = () => {
 
                   <div className="space-y-2">
                     <Label>Logo do App</Label>
-                    <div className="flex h-32 w-32 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-accent/30 transition-colors hover:border-primary/60">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
+                    <input type="file" ref={logoInputRef} accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                    <div
+                      onClick={() => logoInputRef.current?.click()}
+                      className="flex h-32 w-32 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-accent/30 transition-colors hover:border-primary/60 overflow-hidden"
+                    >
+                      {logoUrl ? (
+                        <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
+                      ) : (
+                        <Upload className="h-8 w-8 text-muted-foreground" />
+                      )}
                     </div>
                   </div>
 
@@ -132,11 +214,19 @@ const AppCreation = () => {
 
                   <div className="space-y-2">
                     <Label>Plano de Fundo</Label>
-                    <div className="flex h-24 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-accent/30 transition-colors hover:border-primary/60">
-                      <div className="text-center">
-                        <Upload className="h-6 w-6 mx-auto text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground mt-1">Upload imagem</span>
-                      </div>
+                    <input type="file" ref={bgInputRef} accept="image/*" className="hidden" onChange={handleBgUpload} />
+                    <div
+                      onClick={() => bgInputRef.current?.click()}
+                      className="flex h-24 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-accent/30 transition-colors hover:border-primary/60 overflow-hidden"
+                    >
+                      {bgUrl ? (
+                        <img src={bgUrl} alt="Background" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="text-center">
+                          <Upload className="h-6 w-6 mx-auto text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground mt-1">Upload imagem</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -240,7 +330,7 @@ const AppCreation = () => {
 
                   <div className="space-y-2">
                     <Label>E-mail de Suporte</Label>
-                    <Input type="email" placeholder="suporte@meusite.com" />
+                    <Input type="email" value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} placeholder="suporte@meusite.com" />
                   </div>
                 </div>
               )}
@@ -306,11 +396,9 @@ const AppCreation = () => {
                     Próximo <ArrowRight className="h-4 w-4" />
                   </Button>
                 ) : (
-                  <Link to="/dashboard">
-                    <Button variant="hero" className="gap-2">
-                      <Rocket className="h-4 w-4" /> Publicar App
-                    </Button>
-                  </Link>
+                  <Button variant="hero" onClick={handlePublish} disabled={saving} className="gap-2">
+                    <Rocket className="h-4 w-4" /> {saving ? "Salvando..." : "Publicar App"}
+                  </Button>
                 )}
               </div>
             </motion.div>
@@ -322,13 +410,16 @@ const AppCreation = () => {
               <p className="mb-3 text-center text-sm font-semibold text-muted-foreground">Preview do App</p>
               <div className="mx-auto w-[280px] rounded-[2.5rem] border-[6px] border-foreground/10 bg-foreground/5 p-3">
                 <div className="relative h-[500px] overflow-hidden rounded-[2rem] bg-background">
-                  {/* Simulated app preview */}
                   <div className="flex h-full flex-col items-center justify-center p-6 text-center" style={{ background: `linear-gradient(135deg, ${primaryColor}22, ${primaryColor}08)` }}>
-                    <div className="h-16 w-16 rounded-2xl gradient-primary mb-4 flex items-center justify-center">
-                      <span className="text-2xl text-primary-foreground font-bold">
-                        {appName ? appName.charAt(0).toUpperCase() : "P"}
-                      </span>
-                    </div>
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="Logo" className="h-16 w-16 rounded-2xl mb-4 object-cover" />
+                    ) : (
+                      <div className="h-16 w-16 rounded-2xl gradient-primary mb-4 flex items-center justify-center">
+                        <span className="text-2xl text-primary-foreground font-bold">
+                          {appName ? appName.charAt(0).toUpperCase() : "P"}
+                        </span>
+                      </div>
+                    )}
                     <h3 className="text-lg font-extrabold text-foreground">{welcomeText || "Seja Bem-Vindo!"}</h3>
                     <p className="mt-2 text-xs text-muted-foreground">{appName || "Meu App"}</p>
                     <div className="mt-6 w-full space-y-3">
