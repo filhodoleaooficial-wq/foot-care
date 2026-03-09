@@ -133,7 +133,7 @@ const Dashboard = () => {
             <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">Meus Aplicativos</h1>
             <p className="mt-1 text-muted-foreground">Gerencie e crie seus apps de cuidados com os pés.</p>
           </div>
-          <Link to="/app/new">
+          <Link to="/create-app">
             <Button variant="hero" className="gap-2">
               <Plus className="h-4 w-4" />
               Criar Novo App
@@ -204,7 +204,7 @@ const Dashboard = () => {
             ))}
 
             {/* Create new card */}
-            <Link to="/app/new">
+            <Link to="/create-app">
               <motion.div
                 className="flex h-full min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-accent/30 p-6 text-center transition-all hover:border-primary/60 hover:bg-accent/50"
                 initial={{ opacity: 0, y: 20 }}
