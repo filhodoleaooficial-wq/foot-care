@@ -32,6 +32,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/create-app" element={<ProtectedRoute><AppCreation /></ProtectedRoute>} />
             <Route path="/app/:appId/products" element={<ProtectedRoute><ProductsManagement /></ProtectedRoute>} />
+            <Route path="/whatsapp" element={<ProtectedRoute><WhatsAppPage /></ProtectedRoute>} />
 
             {/* Client-facing app routes */}
             <Route path="/app/:appId" element={<ClientAppLayout />}>

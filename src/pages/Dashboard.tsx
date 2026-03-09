@@ -156,6 +156,7 @@ const Dashboard = () => {
           {[
             { icon: LayoutDashboard, label: "Meus Apps", href: "/dashboard", count: sidebarCounts.apps },
             { icon: ShoppingBag, label: "Produtos", href: "/dashboard", count: sidebarCounts.products },
+            { icon: MessageSquare, label: "WhatsApp", href: "/whatsapp" },
             { icon: BarChart3, label: "Vendas", href: "/dashboard" },
             { icon: Link2, label: "Integrações", href: "/dashboard" },
             { icon: Users, label: "Meus Clientes", href: "/dashboard" },
