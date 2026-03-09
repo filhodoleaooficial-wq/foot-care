@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo-pesaude.png";
 
 const LoginPage = () => {
@@ -14,11 +16,37 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: integrate with auth
-    window.location.href = "/dashboard";
+    setLoading(true);
+
+    try {
+      if (isSignup) {
+        const { error } = await signUp(email, password, name);
+        if (error) throw error;
+        toast({
+          title: "Conta criada!",
+          description: "Verifique seu e-mail para confirmar o cadastro.",
+        });
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) throw error;
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Algo deu errado. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,6 +81,7 @@ const LoginPage = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
@@ -69,6 +98,7 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10"
+                required
               />
             </div>
           </div>
@@ -84,6 +114,8 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 pr-10"
+                required
+                minLength={6}
               />
               <button
                 type="button"
@@ -95,8 +127,8 @@ const LoginPage = () => {
             </div>
           </div>
 
-          <Button type="submit" variant="hero" className="w-full" size="lg">
-            {isSignup ? "Criar Conta" : "Entrar"}
+          <Button type="submit" variant="hero" className="w-full" size="lg" disabled={loading}>
+            {loading ? "Aguarde..." : isSignup ? "Criar Conta" : "Entrar"}
           </Button>
         </form>
 

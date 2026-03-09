@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2 } from "lucide-react";
+import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo-pesaude.png";
 
-const mockApps = [
-  { id: "1", name: "Podologia Premium", slug: "podologia-premium", status: "published" as const },
-  { id: "2", name: "Cuidados Básicos", slug: "cuidados-basicos", status: "draft" as const },
-];
+interface App {
+  id: string;
+  name: string;
+  status: string;
+  primary_color: string;
+  created_at: string;
+}
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Meus Apps", href: "/dashboard" },
@@ -22,6 +28,42 @@ const sidebarItems = [
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [apps, setApps] = useState<App[]>([]);
+  const [loadingApps, setLoadingApps] = useState(true);
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchApps();
+  }, []);
+
+  const fetchApps = async () => {
+    const { data, error } = await supabase
+      .from("apps")
+      .select("id, name, status, primary_color, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching apps:", error);
+    } else {
+      setApps(data || []);
+    }
+    setLoadingApps(false);
+  };
+
+  const deleteApp = async (id: string) => {
+    const { error } = await supabase.from("apps").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+    } else {
+      setApps((prev) => prev.filter((a) => a.id !== id));
+      toast({ title: "App excluído" });
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <div className="min-h-screen bg-secondary/30">
@@ -34,7 +76,9 @@ const Dashboard = () => {
           <img src={logoImg} alt="PéSaúde" className="h-6 w-6" />
           <span className="font-bold text-foreground">PéSaúde</span>
         </div>
-        <div className="w-5" />
+        <button onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
+          <LogOut className="h-5 w-5" />
+        </button>
       </header>
 
       {/* Sidebar overlay (mobile) */}
@@ -72,6 +116,14 @@ const Dashboard = () => {
             </Link>
           ))}
         </nav>
+        <div className="absolute bottom-4 left-0 right-0 px-3">
+          <div className="rounded-lg border bg-background p-3 text-xs">
+            <p className="font-medium text-foreground truncate">{user?.email}</p>
+            <button onClick={handleSignOut} className="mt-2 flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
+              <LogOut className="h-3 w-3" /> Sair
+            </button>
+          </div>
+        </div>
       </aside>
 
       {/* Main content */}
@@ -89,73 +141,85 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {mockApps.map((app, i) => (
-            <motion.div
-              key={app.id}
-              className="group rounded-xl border bg-card p-6 shadow-card transition-all hover:shadow-card-hover"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-primary text-primary-foreground font-bold text-lg">
-                    {app.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-foreground">{app.name}</h3>
-                    <span
-                      className={`inline-block mt-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        app.status === "published"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-amber-100 text-amber-700"
-                      }`}
+        {loadingApps ? (
+          <div className="flex justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {apps.map((app, i) => (
+              <motion.div
+                key={app.id}
+                className="group rounded-xl border bg-card p-6 shadow-card transition-all hover:shadow-card-hover"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-12 w-12 items-center justify-center rounded-xl text-white font-bold text-lg"
+                      style={{ backgroundColor: app.primary_color || "hsl(var(--primary))" }}
                     >
-                      {app.status === "published" ? "Publicado" : "Rascunho"}
-                    </span>
+                      {app.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-foreground">{app.name}</h3>
+                      <span
+                        className={`inline-block mt-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          app.status === "published"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {app.status === "published" ? "Publicado" : "Rascunho"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground">
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteApp(app.id)}
+                      className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground">
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                    <ExternalLink className="h-3 w-3" /> Link
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                    <Package className="h-3 w-3" /> Produtos
+                  </Button>
+                  <Button variant="hero" size="sm" className="gap-1.5 text-xs">
+                    <Rocket className="h-3 w-3" /> Publicar
+                  </Button>
                 </div>
-              </div>
+              </motion.div>
+            ))}
 
-              <div className="mt-6 flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                  <ExternalLink className="h-3 w-3" /> Link
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                  <Package className="h-3 w-3" /> Produtos
-                </Button>
-                <Button variant="hero" size="sm" className="gap-1.5 text-xs">
-                  <Rocket className="h-3 w-3" /> Publicar
-                </Button>
-              </div>
-            </motion.div>
-          ))}
-
-          {/* Create new card */}
-          <Link to="/app/new">
-            <motion.div
-              className="flex h-full min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-accent/30 p-6 text-center transition-all hover:border-primary/60 hover:bg-accent/50"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-primary">
-                <Plus className="h-6 w-6" />
-              </div>
-              <p className="mt-3 font-semibold text-foreground">Criar Novo App</p>
-              <p className="mt-1 text-xs text-muted-foreground">6 etapas simples</p>
-            </motion.div>
-          </Link>
-        </div>
+            {/* Create new card */}
+            <Link to="/app/new">
+              <motion.div
+                className="flex h-full min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-accent/30 p-6 text-center transition-all hover:border-primary/60 hover:bg-accent/50"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-primary">
+                  <Plus className="h-6 w-6" />
+                </div>
+                <p className="mt-3 font-semibold text-foreground">Criar Novo App</p>
+                <p className="mt-1 text-xs text-muted-foreground">6 etapas simples</p>
+              </motion.div>
+            </Link>
+          </div>
+        )}
       </main>
     </div>
   );
