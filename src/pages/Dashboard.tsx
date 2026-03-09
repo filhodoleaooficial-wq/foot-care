@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown } from "lucide-react";
+import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown, Copy, Check } from "lucide-react";
 import { useAuth, STRIPE_PRICES } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,15 +16,10 @@ interface App {
   created_at: string;
 }
 
-const sidebarItems = [
-  { icon: LayoutDashboard, label: "Meus Apps", href: "/dashboard" },
-  { icon: ShoppingBag, label: "Produtos", href: "#" },
-  { icon: BarChart3, label: "Vendas", href: "#" },
-  { icon: Link2, label: "Integrações", href: "#" },
-  { icon: Users, label: "Meus Clientes", href: "#" },
-  { icon: HelpCircle, label: "Suporte", href: "#" },
-  { icon: Settings, label: "Configurações", href: "#" },
-];
+interface SidebarCounts {
+  apps: number;
+  products: number;
+}
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,9 +27,12 @@ const Dashboard = () => {
   const [loadingApps, setLoadingApps] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [copiedAppId, setCopiedAppId] = useState<string | null>(null);
+  const [sidebarCounts, setSidebarCounts] = useState<SidebarCounts>({ apps: 0, products: 0 });
   const { user, signOut, subscription, checkSubscription } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
@@ -61,8 +59,15 @@ const Dashboard = () => {
       console.error("Error fetching apps:", error);
     } else {
       setApps(data || []);
+      setSidebarCounts((prev) => ({ ...prev, apps: (data || []).length }));
     }
     setLoadingApps(false);
+
+    // Fetch product count
+    const { count } = await supabase
+      .from("products")
+      .select("*", { count: "exact", head: true });
+    setSidebarCounts((prev) => ({ ...prev, products: count || 0 }));
   };
 
   const deleteApp = async (id: string) => {
@@ -148,7 +153,15 @@ const Dashboard = () => {
           </button>
         </div>
         <nav className="mt-4 space-y-1 px-3">
-          {sidebarItems.map((item) => (
+          {[
+            { icon: LayoutDashboard, label: "Meus Apps", href: "/dashboard", count: sidebarCounts.apps },
+            { icon: ShoppingBag, label: "Produtos", href: "/dashboard", count: sidebarCounts.products },
+            { icon: BarChart3, label: "Vendas", href: "/dashboard" },
+            { icon: Link2, label: "Integrações", href: "/dashboard" },
+            { icon: Users, label: "Meus Clientes", href: "/dashboard" },
+            { icon: HelpCircle, label: "Suporte", href: "/dashboard" },
+            { icon: Settings, label: "Configurações", href: "/dashboard" },
+          ].map((item) => (
             <Link
               key={item.label}
               to={item.href}
@@ -157,6 +170,11 @@ const Dashboard = () => {
             >
               <item.icon className="h-4 w-4" />
               {item.label}
+              {item.count !== undefined && item.count > 0 && (
+                <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                  {item.count}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -312,14 +330,51 @@ const Dashboard = () => {
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                        <ExternalLink className="h-3 w-3" /> Link
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => {
+                          const url = `${window.location.origin}/app/${app.id}`;
+                          navigator.clipboard.writeText(url);
+                          setCopiedAppId(app.id);
+                          toast({ title: "Link copiado!", description: url });
+                          setTimeout(() => setCopiedAppId(null), 2000);
+                        }}
+                      >
+                        {copiedAppId === app.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        {copiedAppId === app.id ? "Copiado" : "Link"}
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => navigate(`/create-app?appId=${app.id}`)}
+                      >
                         <Package className="h-3 w-3" /> Produtos
                       </Button>
-                      <Button variant="hero" size="sm" className="gap-1.5 text-xs">
-                        <Rocket className="h-3 w-3" /> Publicar
+                      <Button
+                        variant="hero"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={async () => {
+                          const newStatus = app.status === "published" ? "draft" : "published";
+                          const { error } = await supabase
+                            .from("apps")
+                            .update({ status: newStatus })
+                            .eq("id", app.id);
+                          if (error) {
+                            toast({ title: "Erro", description: error.message, variant: "destructive" });
+                          } else {
+                            setApps((prev) =>
+                              prev.map((a) => (a.id === app.id ? { ...a, status: newStatus } : a))
+                            );
+                            toast({ title: newStatus === "published" ? "App publicado!" : "App despublicado" });
+                          }
+                        }}
+                      >
+                        <Rocket className="h-3 w-3" />
+                        {app.status === "published" ? "Despublicar" : "Publicar"}
                       </Button>
                     </div>
                   </motion.div>
