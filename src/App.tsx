@@ -9,6 +9,10 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import AppCreation from "./pages/AppCreation";
+import ClientAppLayout from "./pages/client/ClientAppLayout";
+import ClientLogin from "./pages/client/ClientLogin";
+import ClientHome from "./pages/client/ClientHome";
+import ClientProduct from "./pages/client/ClientProduct";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +29,14 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/app/new" element={<ProtectedRoute><AppCreation /></ProtectedRoute>} />
+
+            {/* Client-facing app routes */}
+            <Route path="/app/:appId" element={<ClientAppLayout />}>
+              <Route index element={<ClientLogin />} />
+              <Route path="home" element={<ClientHome />} />
+              <Route path="product/:productId" element={<ClientProduct />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
