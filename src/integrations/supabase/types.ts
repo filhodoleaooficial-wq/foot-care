@@ -68,6 +68,200 @@ export type Database = {
         }
         Relationships: []
       }
+      banners: {
+        Row: {
+          app_id: string
+          created_at: string
+          id: string
+          image_url: string
+          is_active: boolean
+          link_url: string | null
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_url?: string | null
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_url?: string | null
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banners_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          content_text: string | null
+          content_type: string
+          content_url: string | null
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          is_published: boolean
+          module_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_text?: string | null
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          is_published?: boolean
+          module_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_text?: string | null
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          is_published?: boolean
+          module_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modules: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          product_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          product_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          product_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          app_id: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          name: string
+          offer_type: string
+          price: number | null
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app_id: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          name: string
+          offer_type?: string
+          price?: number | null
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          app_id?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          name?: string
+          offer_type?: string
+          price?: number | null
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
