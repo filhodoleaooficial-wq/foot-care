@@ -1,0 +1,103 @@
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Heart, Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const menuItems = [
+  { icon: Home, label: "Início", path: "/home" },
+  { icon: MessageCircle, label: "Comunidade", path: "/comunidade" },
+  { icon: FileText, label: "Feed", path: "/feed" },
+  { icon: Star, label: "Módulos salvos", path: "/salvos" },
+  { icon: Download, label: "Instalar Aplicativo", path: "/instalar" },
+  { icon: Search, label: "Pesquisar", path: "/pesquisar" },
+];
+
+interface VivaBemSidebarProps {
+  points?: number;
+}
+
+const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
+  const [collapsed, setCollapsed] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  return (
+    <aside
+      className={`fixed left-0 top-0 z-50 h-screen flex flex-col transition-all duration-300 ${
+        collapsed ? "w-16" : "w-56"
+      }`}
+      style={{ backgroundColor: "hsl(var(--sidebar-background))" }}
+    >
+      {/* Logo */}
+      <div className="flex items-center gap-2 px-4 pt-6 pb-2">
+        <Heart className="h-6 w-6 text-primary fill-primary flex-shrink-0" />
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.span
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={{ opacity: 0, width: 0 }}
+              className="text-lg font-bold text-white overflow-hidden whitespace-nowrap"
+            >
+              vivabem
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Points badge */}
+      <div className="px-4 py-3">
+        <div
+          className={`rounded-full flex items-center justify-center font-bold text-white text-sm ${
+            collapsed ? "w-9 h-9 mx-auto" : "w-10 h-10"
+          }`}
+          style={{ backgroundColor: "hsl(var(--vivabem-green))" }}
+        >
+          {points}
+        </div>
+      </div>
+
+      {/* Menu items */}
+      <nav className="flex-1 px-2 py-2 space-y-1">
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-sidebar-accent text-primary"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white"
+              }`}
+            >
+              <item.icon className="h-5 w-5 flex-shrink-0" />
+              <AnimatePresence>
+                {!collapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="overflow-hidden whitespace-nowrap"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Collapse toggle */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="mx-auto mb-6 flex items-center justify-center h-8 w-8 rounded-full bg-sidebar-accent text-sidebar-foreground hover:text-white transition-colors"
+      >
+        {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+      </button>
+    </aside>
+  );
+};
+
+export default VivaBemSidebar;
