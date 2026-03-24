@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Pencil, Trash2, Package, GripVertical, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Package, GripVertical, Eye, EyeOff, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -69,11 +69,13 @@ const SortableProductCard = ({
   onTogglePublish,
   onEdit,
   onDelete,
+  onManageModules,
 }: {
   product: Product;
   onTogglePublish: (p: Product) => void;
   onEdit: (p: Product) => void;
   onDelete: (id: string) => void;
+  onManageModules: (id: string) => void;
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: product.id,
@@ -132,6 +134,13 @@ const SortableProductCard = ({
         </div>
 
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => onManageModules(product.id)}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            title="Gerenciar Módulos"
+          >
+            <Layers className="h-4 w-4" />
+          </button>
           <button
             onClick={() => onTogglePublish(product)}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
@@ -304,6 +313,7 @@ const ProductsManagement = () => {
                     onTogglePublish={togglePublish}
                     onEdit={openEdit}
                     onDelete={setDeleteId}
+                    onManageModules={(id) => navigate(`/admin/product/${id}/modules`)}
                   />
                 ))}
               </div>
