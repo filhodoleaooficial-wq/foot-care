@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/admin/create-app" element={<ProtectedRoute><AppCreation /></ProtectedRoute>} />
             <Route path="/admin/app/:appId/products" element={<ProtectedRoute><ProductsManagement /></ProtectedRoute>} />
+            <Route path="/admin/product/:productId/modules" element={<ProtectedRoute><ModulesManagement /></ProtectedRoute>} />
             <Route path="/admin/whatsapp" element={<ProtectedRoute><WhatsAppPage /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
