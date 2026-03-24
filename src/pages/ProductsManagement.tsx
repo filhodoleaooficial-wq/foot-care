@@ -313,6 +313,7 @@ const ProductsManagement = () => {
                     onTogglePublish={togglePublish}
                     onEdit={openEdit}
                     onDelete={setDeleteId}
+                    onManageModules={(id) => navigate(`/admin/product/${id}/modules`)}
                   />
                 ))}
               </div>
