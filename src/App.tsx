@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import AppCreation from "./pages/AppCreation";
 import ProductsManagement from "./pages/ProductsManagement";
+import ModulesManagement from "./pages/ModulesManagement";
 import WhatsAppPage from "./pages/WhatsAppPage";
 import NotFound from "./pages/NotFound";
 
