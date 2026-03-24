@@ -69,11 +69,13 @@ const SortableProductCard = ({
   onTogglePublish,
   onEdit,
   onDelete,
+  onManageModules,
 }: {
   product: Product;
   onTogglePublish: (p: Product) => void;
   onEdit: (p: Product) => void;
   onDelete: (id: string) => void;
+  onManageModules: (id: string) => void;
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: product.id,
