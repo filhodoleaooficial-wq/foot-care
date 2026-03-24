@@ -135,6 +135,13 @@ const SortableProductCard = ({
 
         <div className="flex items-center gap-1">
           <button
+            onClick={() => onManageModules(product.id)}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            title="Gerenciar Módulos"
+          >
+            <Layers className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => onTogglePublish(product)}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
             title={product.is_published ? "Despublicar" : "Publicar"}
