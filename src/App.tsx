@@ -14,6 +14,10 @@ import AppCreation from "./pages/AppCreation";
 import ProductsManagement from "./pages/ProductsManagement";
 import ModulesManagement from "./pages/ModulesManagement";
 import WhatsAppPage from "./pages/WhatsAppPage";
+import CommunityPage from "./pages/CommunityPage";
+import FeedPage from "./pages/FeedPage";
+import SavedModulesPage from "./pages/SavedModulesPage";
+import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
