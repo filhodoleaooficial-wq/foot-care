@@ -34,6 +34,10 @@ const App = () => (
             <Route path="/" element={<VivaBemLogin />} />
             <Route element={<VivaBemLayout />}>
               <Route path="/home" element={<VivaBemHome />} />
+              <Route path="/comunidade" element={<CommunityPage />} />
+              <Route path="/feed" element={<FeedPage />} />
+              <Route path="/salvos" element={<SavedModulesPage />} />
+              <Route path="/pesquisar" element={<SearchPage />} />
             </Route>
 
             {/* Admin routes */}
