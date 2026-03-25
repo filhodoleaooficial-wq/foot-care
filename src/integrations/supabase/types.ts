@@ -139,6 +139,27 @@ export type Database = {
           },
         ]
       }
+      community_posts: {
+        Row: {
+          client_email: string
+          content: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          client_email: string
+          content: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          client_email?: string
+          content?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           content_text: string | null
@@ -366,6 +387,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      saved_modules: {
+        Row: {
+          client_email: string
+          created_at: string
+          id: string
+          module_id: string
+        }
+        Insert: {
+          client_email: string
+          created_at?: string
+          id?: string
+          module_id: string
+        }
+        Update: {
+          client_email?: string
+          created_at?: string
+          id?: string
+          module_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_modules_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

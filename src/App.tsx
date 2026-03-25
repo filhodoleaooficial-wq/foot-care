@@ -14,6 +14,10 @@ import AppCreation from "./pages/AppCreation";
 import ProductsManagement from "./pages/ProductsManagement";
 import ModulesManagement from "./pages/ModulesManagement";
 import WhatsAppPage from "./pages/WhatsAppPage";
+import CommunityPage from "./pages/CommunityPage";
+import FeedPage from "./pages/FeedPage";
+import SavedModulesPage from "./pages/SavedModulesPage";
+import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +34,10 @@ const App = () => (
             <Route path="/" element={<VivaBemLogin />} />
             <Route element={<VivaBemLayout />}>
               <Route path="/home" element={<VivaBemHome />} />
+              <Route path="/comunidade" element={<CommunityPage />} />
+              <Route path="/feed" element={<FeedPage />} />
+              <Route path="/salvos" element={<SavedModulesPage />} />
+              <Route path="/pesquisar" element={<SearchPage />} />
             </Route>
 
             {/* Admin routes */}
