@@ -139,10 +139,10 @@ const VivaBemHome = () => {
         )}
       </CardSection>
 
-      {/* Acelere seus Resultados */}
-      <CardSection title="Acelere seus Resultados">
-        {premiumProducts.length > 0 ? (
-          premiumProducts.map((product) => (
+      {/* Acelere seus Resultados — conteúdo pago, só aparece após pagamento */}
+      {premiumProducts.length > 0 && (
+        <CardSection title="Acelere seus Resultados">
+          {premiumProducts.map((product) => (
             <ContentCard
               key={product.id}
               title={product.name}
@@ -150,14 +150,9 @@ const VivaBemHome = () => {
               locked
               onClick={() => navigate(`/produto/${product.id}`)}
             />
-          ))
-        ) : (
-          <>
-            <ContentCard title='Doces que não<br/><b>ENGORDAM</b>' locked />
-            <ContentCard title='Chá<br/><b>DESINFLAMATÓRIO</b>' locked />
-          </>
-        )}
-      </CardSection>
+          ))}
+        </CardSection>
+      )}
 
       {/* Presentes para você! */}
       <CardSection title="Presentes para você!">
