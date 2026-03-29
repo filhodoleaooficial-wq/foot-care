@@ -8,6 +8,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import VivaBemLogin from "./pages/VivaBemLogin";
 import VivaBemLayout from "./pages/VivaBemLayout";
 import VivaBemHome from "./pages/VivaBemHome";
+import VivaBemProduct from "./pages/VivaBemProduct";
+import InstallAppPage from "./pages/InstallAppPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import AppCreation from "./pages/AppCreation";
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/" element={<VivaBemLogin />} />
             <Route element={<VivaBemLayout />}>
               <Route path="/home" element={<VivaBemHome />} />
+              <Route path="/produto/:productId" element={<VivaBemProduct />} />
+              <Route path="/instalar" element={<InstallAppPage />} />
               <Route path="/comunidade" element={<CommunityPage />} />
               <Route path="/feed" element={<FeedPage />} />
               <Route path="/salvos" element={<SavedModulesPage />} />
