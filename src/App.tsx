@@ -8,6 +8,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import VivaBemLogin from "./pages/VivaBemLogin";
 import VivaBemLayout from "./pages/VivaBemLayout";
 import VivaBemHome from "./pages/VivaBemHome";
+import VivaBemProduct from "./pages/VivaBemProduct";
+import InstallAppPage from "./pages/InstallAppPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import AppCreation from "./pages/AppCreation";
