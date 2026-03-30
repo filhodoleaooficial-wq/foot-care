@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ClientProtectedRoute from "@/components/ClientProtectedRoute";
 import VivaBemLogin from "./pages/VivaBemLogin";
 import VivaBemLayout from "./pages/VivaBemLayout";
 import VivaBemHome from "./pages/VivaBemHome";
