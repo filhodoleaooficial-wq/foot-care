@@ -4,6 +4,7 @@ import { Star, Trash2, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SavedItem {
   id: string;
@@ -14,14 +15,14 @@ interface SavedItem {
 
 const SavedModulesPage = () => {
   const [saved, setSaved] = useState<SavedItem[]>([]);
-  const clientEmail = localStorage.getItem("vivabem_client_email") || "";
+  const { user } = useAuth();
 
   const fetchSaved = async () => {
-    if (!clientEmail) return;
+    if (!user) return;
     const { data } = await supabase
       .from("saved_modules")
       .select("id, module_id")
-      .eq("client_email", clientEmail)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (!data || data.length === 0) {
@@ -49,7 +50,7 @@ const SavedModulesPage = () => {
 
   useEffect(() => {
     fetchSaved();
-  }, []);
+  }, [user]);
 
   const handleRemove = async (id: string) => {
     const { error } = await supabase.from("saved_modules").delete().eq("id", id);

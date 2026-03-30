@@ -12,45 +12,53 @@ const VivaBemLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<"feminino" | "masculino">("feminino");
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !age) {
+    if (!email || !password || (isSignUp && !age)) {
       toast({ title: "Preencha todos os campos", variant: "destructive" });
       return;
     }
 
     setLoading(true);
     try {
-      // Check if client already exists
-      const { data: existing } = await supabase
-        .from("app_clients")
-        .select("id")
-        .eq("email", email)
-        .maybeSingle();
+      if (isSignUp) {
+        // Sign up with Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (authError) throw authError;
 
-      if (existing) {
-        // Existing client — just login
-        localStorage.setItem("vivabem_client_id", existing.id);
-        localStorage.setItem("vivabem_email", email);
+        // Create app_clients record linked to auth user
+        if (authData.user) {
+          const { error: clientError } = await supabase
+            .from("app_clients")
+            .insert({
+              email,
+              age: parseInt(age),
+              gender,
+              user_id: authData.user.id,
+            });
+          if (clientError) throw clientError;
+        }
+
+        toast({ title: "Conta criada! Bem-vinda ao VivaBem! 💚" });
+        navigate("/home");
       } else {
-        // New client — insert
-        const { data, error } = await supabase
-          .from("app_clients")
-          .insert({ email, age: parseInt(age), gender })
-          .select("id")
-          .single();
-
+        // Sign in
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        localStorage.setItem("vivabem_client_id", data.id);
-        localStorage.setItem("vivabem_email", email);
-      }
 
-      toast({ title: "Bem-vinda ao VivaBem! 💚" });
-      navigate("/home");
+        toast({ title: "Bem-vinda ao VivaBem! 💚" });
+        navigate("/home");
+      }
     } catch (err: any) {
       toast({ title: "Erro ao entrar", description: err.message, variant: "destructive" });
     } finally {
@@ -90,7 +98,7 @@ const VivaBemLogin = () => {
         {/* Form card */}
         <div className="rounded-2xl bg-card p-8 shadow-card border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-6 text-center">
-            Acesse sua conta
+            {isSignUp ? "Crie sua conta" : "Acesse sua conta"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -108,56 +116,84 @@ const VivaBemLogin = () => {
             </div>
 
             <div>
-              <Label htmlFor="age" className="text-sm font-medium">Idade</Label>
+              <Label htmlFor="password" className="text-sm font-medium">Senha</Label>
               <Input
-                id="age"
-                type="number"
-                placeholder="25"
-                min={10}
-                max={100}
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1.5"
+                minLength={6}
                 required
               />
             </div>
 
-            <div>
-              <Label className="text-sm font-medium">Sexo</Label>
-              <div className="grid grid-cols-2 gap-3 mt-1.5">
-                <button
-                  type="button"
-                  onClick={() => setGender("feminino")}
-                  className={`rounded-xl py-3 text-sm font-semibold border-2 transition-all ${
-                    gender === "feminino"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-card text-muted-foreground hover:border-primary/40"
-                  }`}
-                >
-                  Feminino
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGender("masculino")}
-                  className={`rounded-xl py-3 text-sm font-semibold border-2 transition-all ${
-                    gender === "masculino"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-card text-muted-foreground hover:border-primary/40"
-                  }`}
-                >
-                  Masculino
-                </button>
-              </div>
-            </div>
+            {isSignUp && (
+              <>
+                <div>
+                  <Label htmlFor="age" className="text-sm font-medium">Idade</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder="25"
+                    min={10}
+                    max={100}
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    className="mt-1.5"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Sexo</Label>
+                  <div className="grid grid-cols-2 gap-3 mt-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setGender("feminino")}
+                      className={`rounded-xl py-3 text-sm font-semibold border-2 transition-all ${
+                        gender === "feminino"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      Feminino
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGender("masculino")}
+                      className={`rounded-xl py-3 text-sm font-semibold border-2 transition-all ${
+                        gender === "masculino"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      Masculino
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
             <Button
               type="submit"
               disabled={loading}
               className="w-full gradient-primary text-primary-foreground font-bold text-base py-6 rounded-xl shadow-glow"
             >
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? "Entrando..." : isSignUp ? "Criar conta" : "Entrar"}
             </Button>
           </form>
+
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-primary hover:underline"
+            >
+              {isSignUp ? "Já tenho conta — Entrar" : "Não tenho conta — Criar"}
+            </button>
+          </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
