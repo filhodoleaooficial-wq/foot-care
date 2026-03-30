@@ -34,29 +34,39 @@ interface Lesson {
 }
 
 const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null; text?: string | null }) => {
-  if (!url && !text) return null;
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
 
-  if (type === "video" && url) {
+  useEffect(() => {
+    if (url) {
+      getContentUrl(url).then(setResolvedUrl);
+    } else {
+      setResolvedUrl(null);
+    }
+  }, [url]);
+
+  if (!resolvedUrl && !text) return null;
+
+  if (type === "video" && resolvedUrl) {
     return (
       <div className="rounded-xl overflow-hidden bg-black aspect-video">
-        <video controls className="w-full h-full" src={url} />
+        <video controls className="w-full h-full" src={resolvedUrl} />
       </div>
     );
   }
 
-  if (type === "pdf" && url) {
+  if (type === "pdf" && resolvedUrl) {
     return (
       <div className="rounded-xl overflow-hidden border border-border bg-card">
-        <iframe src={url} className="w-full h-[70vh]" title="PDF Viewer" />
+        <iframe src={resolvedUrl} className="w-full h-[70vh]" title="PDF Viewer" />
       </div>
     );
   }
 
-  if (type === "audio" && url) {
+  if (type === "audio" && resolvedUrl) {
     return (
       <div className="rounded-xl bg-card border border-border p-4 flex items-center gap-3">
         <Music className="h-6 w-6 text-primary flex-shrink-0" />
-        <audio controls className="w-full" src={url} />
+        <audio controls className="w-full" src={resolvedUrl} />
       </div>
     );
   }
@@ -67,9 +77,9 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
     );
   }
 
-  if (url) {
+  if (resolvedUrl) {
     return (
-      <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary underline">
+      <a href={resolvedUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary underline">
         <FileText className="h-4 w-4" /> Abrir arquivo
       </a>
     );
