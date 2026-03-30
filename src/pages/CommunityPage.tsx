@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Post {
   id: string;
@@ -17,7 +18,7 @@ const CommunityPage = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
   const [loading, setLoading] = useState(false);
-  const clientEmail = localStorage.getItem("vivabem_client_email") || "";
+  const { user } = useAuth();
 
   const fetchPosts = async () => {
     const { data } = await supabase
@@ -32,14 +33,14 @@ const CommunityPage = () => {
   }, []);
 
   const handleSubmit = async () => {
-    if (!newPost.trim() || !clientEmail) {
+    if (!newPost.trim() || !user) {
       toast.error("Escreva algo para publicar.");
       return;
     }
     setLoading(true);
     const { error } = await supabase
       .from("community_posts")
-      .insert({ client_email: clientEmail, content: newPost.trim() });
+      .insert({ client_email: user.email || "", content: newPost.trim(), user_id: user.id });
     if (error) {
       toast.error("Erro ao publicar.");
     } else {

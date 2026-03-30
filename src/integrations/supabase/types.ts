@@ -23,6 +23,7 @@ export type Database = {
           id: string
           points: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           age: number
@@ -32,6 +33,7 @@ export type Database = {
           id?: string
           points?: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           age?: number
@@ -41,6 +43,7 @@ export type Database = {
           id?: string
           points?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -145,18 +148,21 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          user_id: string | null
         }
         Insert: {
           client_email: string
           content: string
           created_at?: string
           id?: string
+          user_id?: string | null
         }
         Update: {
           client_email?: string
           content?: string
           created_at?: string
           id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -394,18 +400,21 @@ export type Database = {
           created_at: string
           id: string
           module_id: string
+          user_id: string | null
         }
         Insert: {
           client_email: string
           created_at?: string
           id?: string
           module_id: string
+          user_id?: string | null
         }
         Update: {
           client_email?: string
           created_at?: string
           id?: string
           module_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
