@@ -34,7 +34,7 @@ const App = () => (
           <Routes>
             {/* VivaBem client routes */}
             <Route path="/" element={<VivaBemLogin />} />
-            <Route element={<VivaBemLayout />}>
+            <Route element={<ClientProtectedRoute><VivaBemLayout /></ClientProtectedRoute>}>
               <Route path="/home" element={<VivaBemHome />} />
               <Route path="/produto/:productId" element={<VivaBemProduct />} />
               <Route path="/instalar" element={<InstallAppPage />} />
