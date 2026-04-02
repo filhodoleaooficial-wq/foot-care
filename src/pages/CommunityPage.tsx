@@ -128,7 +128,7 @@ const CommunityPage = () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  {post.client_email.split("@")[0]}
+                  {post.display_name || "Membro"}
                 </p>
                 <p className="text-xs text-muted-foreground">{formatDate(post.created_at)}</p>
               </div>
