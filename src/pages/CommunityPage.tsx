@@ -9,9 +9,10 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface Post {
   id: string;
-  client_email: string;
+  user_id: string | null;
   content: string;
   created_at: string;
+  display_name?: string;
 }
 
 const CommunityPage = () => {
@@ -23,9 +24,30 @@ const CommunityPage = () => {
   const fetchPosts = async () => {
     const { data } = await supabase
       .from("community_posts")
-      .select("*")
+      .select("id, content, created_at, user_id")
       .order("created_at", { ascending: false });
-    setPosts((data as Post[]) || []);
+    
+    if (!data) { setPosts([]); return; }
+    
+    // Fetch display names from profiles for post authors
+    const userIds = [...new Set(data.map(p => p.user_id).filter(Boolean))];
+    let profileMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .in("user_id", userIds);
+      if (profiles) {
+        profiles.forEach(p => {
+          profileMap[p.user_id] = p.full_name || p.email?.split("@")[0] || "Membro";
+        });
+      }
+    }
+    
+    setPosts(data.map(p => ({
+      ...p,
+      display_name: p.user_id ? (profileMap[p.user_id] || "Membro") : "Membro",
+    })) as Post[]);
   };
 
   useEffect(() => {
@@ -106,7 +128,7 @@ const CommunityPage = () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  {post.client_email.split("@")[0]}
+                  {post.display_name || "Membro"}
                 </p>
                 <p className="text-xs text-muted-foreground">{formatDate(post.created_at)}</p>
               </div>
