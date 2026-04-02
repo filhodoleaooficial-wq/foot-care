@@ -9,9 +9,10 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface Post {
   id: string;
-  client_email: string;
+  user_id: string | null;
   content: string;
   created_at: string;
+  display_name?: string;
 }
 
 const CommunityPage = () => {
