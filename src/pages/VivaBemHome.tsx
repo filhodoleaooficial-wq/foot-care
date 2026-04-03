@@ -119,7 +119,7 @@ const VivaBemHome = () => {
       </header>
 
       {/* Seus Treinos */}
-      <CardSection title="Seus Treinos">
+      <CardSection title="Seus Cuidados">
         {freeProducts.length > 0 ? (
           freeProducts.map((product) => (
             <ContentCard
