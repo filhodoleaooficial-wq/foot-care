@@ -105,15 +105,15 @@ const VivaBemHome = () => {
         <div className="absolute bottom-[-30px] right-20 w-32 h-32 rounded-full bg-primary/10 blur-2xl" />
 
         <div className="relative text-center">
-          <Heart className="h-10 w-10 text-primary fill-primary mx-auto mb-2" />
+          <Footprints className="h-10 w-10 text-primary mx-auto mb-2" />
           <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            viva<span className="text-gradient">bem</span>
+            Pé<span className="text-gradient">Saúde</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground tracking-[0.15em]">
-            Emagrecimento para mulheres
+            Saúde dos Pés
           </p>
           <p className="text-xs text-muted-foreground tracking-widest uppercase mt-0.5">
-            BEM-ESTAR, FITNESS e SAÚDE
+            CUIDADOS, EXERCÍCIOS e BEM-ESTAR
           </p>
         </div>
       </header>
