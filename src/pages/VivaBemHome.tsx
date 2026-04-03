@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Lock } from "lucide-react";
+import { Footprints, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Product {
