@@ -1,74 +1,54 @@
 
+## Plano: Implementar funcionalidades faltantes + Rebrand
 
-## Plano: Proteger dados pessoais da tabela `app_clients`
+### 1. Rebrand — "VivaBem Emagrecimento" → "PéSaúde"
+- **VivaBemLogin.tsx** → Atualizar textos ("Emagrecimento para mulheres" → "Saúde dos Pés"), ícone Heart → Footprints
+- **VivaBemHome.tsx** → Mudar header, seções ("Seus Treinos" → "Seus Cuidados", "Presentes" → "Dicas Gratuitas")
+- **VivaBemSidebar.tsx** → Mudar logo/nome para "PéSaúde", adicionar itens Loja e Blog
+- **index.css** → Ajustar cores se necessário (manter paleta rosa/verde/grafite existente)
 
-### Problema
+### 2. Quiz antes do login (nova página)
+- Criar **`/quiz`** como rota inicial (antes do login)
+- Fluxo: `/` (landing com CTA) → `/quiz` → após completar → `/` (login/cadastro)
+- Quiz com 3-4 perguntas sobre saúde dos pés:
+  - "Qual seu principal problema?" (dor, calosidade, unha encravada, etc.)
+  - "Com que frequência sente desconforto?"
+  - "Já consultou um podólogo?"
+- Visual com cards de opção, progresso, animações
+- Resultado salvo em localStorage para uso futuro
 
-A tabela `app_clients` contém dados sensíveis (email, idade, gênero) e as políticas RLS atuais usam `USING(true)` para SELECT e UPDATE, permitindo que qualquer pessoa leia ou altere qualquer registro.
+### 3. Loja de Produtos (nova página)
+- Criar **`/loja`** no menu lateral
+- Grid de produtos com imagem, nome, preço e botão "Comprar" que abre link externo (`sales_page_url`)
+- Busca produtos do banco com `offer_type !== 'free'` e `sales_page_url` preenchido
+- Se não houver `sales_page_url`, mostra botão desabilitado
 
-### Desafio fundamental
+### 4. Blog (nova página)
+- Criar **`/blog`** no menu lateral
+- Exibe módulos com `content_type = 'text'` como artigos de blog
+- Card com título, descrição, data, clicável para expandir o conteúdo HTML
 
-O login do cliente VivaBem usa localStorage (email) sem Supabase Auth. Sem `auth.uid()`, não é possível criar políticas RLS baseadas em identidade real. A solução requer migrar o login do cliente para Supabase Auth.
-
-### Solução em 3 partes
-
-**1. Migrar login do cliente para Supabase Auth (email/password)**
-
-- Alterar `VivaBemLogin.tsx` para usar `supabase.auth.signUp()` e `supabase.auth.signInWithPassword()` em vez de inserir diretamente na `app_clients`
-- Adicionar campo de senha ao formulário de login
-- Adicionar coluna `user_id` (uuid, nullable inicialmente) à tabela `app_clients` para linkar ao `auth.users`
-- Criar trigger para auto-popular `app_clients` no signup (ou inserir no código após signup)
-- Remover uso de `localStorage` para identidade (`vivabem_client_id`, `vivabem_email`)
-
-**2. Atualizar RLS policies da `app_clients`**
-
-```sql
--- Drop old permissive policies
-DROP POLICY "Clients can view own data" ON app_clients;
-DROP POLICY "Clients can update own data" ON app_clients;
-
--- New restricted policies
-CREATE POLICY "Clients can view own data" ON app_clients
-  FOR SELECT TO authenticated
-  USING (user_id = auth.uid());
-
-CREATE POLICY "Clients can update own data" ON app_clients
-  FOR UPDATE TO authenticated
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
-
--- Keep INSERT for signup flow
-DROP POLICY "Anyone can insert app_clients" ON app_clients;
-CREATE POLICY "Authenticated can insert own client" ON app_clients
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
+### Rotas atualizadas no App.tsx
+```
+/ → Landing simples com CTA para quiz
+/quiz → Página do quiz
+/login → Login/Cadastro (atual VivaBemLogin adaptado)
+/home → Home (protegida)
+/loja → Loja de produtos
+/blog → Blog
 ```
 
-**3. Atualizar páginas que usam localStorage**
-
-| Arquivo | Mudança |
+### Arquivos alterados
+| Arquivo | Ação |
 |---|---|
-| `VivaBemLogin.tsx` | Usar Supabase Auth signup/login, adicionar campo senha |
-| `CommunityPage.tsx` | Trocar `localStorage.getItem("vivabem_client_email")` por `auth.uid()` ou email da sessão |
-| `SavedModulesPage.tsx` | Idem |
-| `saved_modules` e `community_posts` | Atualizar RLS para usar `auth.uid()` em vez de `client_email` |
+| `src/pages/QuizPage.tsx` | **Criar** — Quiz de saúde dos pés |
+| `src/pages/StorePage.tsx` | **Criar** — Loja com links externos |
+| `src/pages/BlogPage.tsx` | **Criar** — Blog com artigos |
+| `src/App.tsx` | Adicionar rotas /quiz, /loja, /blog |
+| `src/components/VivaBemSidebar.tsx` | Adicionar Loja e Blog, rebrand |
+| `src/pages/VivaBemLogin.tsx` | Rebrand textos e ícone |
+| `src/pages/VivaBemHome.tsx` | Rebrand seções e textos |
+| `index.html` | Atualizar título da página |
 
-### Impacto
-
-- Resolve o finding de segurança `app_clients_public_readable`
-- Também resolve o finding anterior `saved_modules_unrestricted_delete`
-- Clientes existentes precisarão criar senha no primeiro acesso (ou implementar migração gradual)
-
-### Migração SQL
-
-```sql
--- Add user_id column to app_clients
-ALTER TABLE app_clients ADD COLUMN user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE;
-
--- Add user_id to community_posts and saved_modules
-ALTER TABLE community_posts ADD COLUMN user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE;
-ALTER TABLE saved_modules ADD COLUMN user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE;
-
--- Update all RLS policies to use auth.uid()
-```
-
+### Sem migração SQL necessária
+Usa tabelas existentes (`products`, `modules`). Quiz salva em localStorage.
