@@ -82,16 +82,16 @@ const VivaBemLogin = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-3">
-            <Heart className="h-10 w-10 text-primary fill-primary" />
+            <Footprints className="h-10 w-10 text-primary" />
           </div>
           <h1 className="text-4xl font-bold text-foreground tracking-tight">
-            viva<span className="text-gradient">bem</span>
+            Pé<span className="text-gradient">Saúde</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground tracking-[0.2em] uppercase">
-            Emagrecimento para mulheres
+            Saúde dos Pés
           </p>
           <p className="text-xs text-muted-foreground mt-1 tracking-widest">
-            BEM-ESTAR, FITNESS e SAÚDE
+            CUIDADOS, EXERCÍCIOS e BEM-ESTAR
           </p>
         </div>
 
