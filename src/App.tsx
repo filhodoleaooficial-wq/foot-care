@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ClientProtectedRoute from "@/components/ClientProtectedRoute";
+import QuizPage from "./pages/QuizPage";
 import VivaBemLogin from "./pages/VivaBemLogin";
 import VivaBemLayout from "./pages/VivaBemLayout";
 import VivaBemHome from "./pages/VivaBemHome";
@@ -21,6 +22,8 @@ import CommunityPage from "./pages/CommunityPage";
 import FeedPage from "./pages/FeedPage";
 import SavedModulesPage from "./pages/SavedModulesPage";
 import SearchPage from "./pages/SearchPage";
+import StorePage from "./pages/StorePage";
+import BlogPage from "./pages/BlogPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,8 +36,13 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* VivaBem client routes */}
+            {/* Quiz (entry point) */}
+            <Route path="/quiz" element={<QuizPage />} />
+
+            {/* Client login */}
             <Route path="/" element={<VivaBemLogin />} />
+
+            {/* Client protected routes */}
             <Route element={<ClientProtectedRoute><VivaBemLayout /></ClientProtectedRoute>}>
               <Route path="/home" element={<VivaBemHome />} />
               <Route path="/produto/:productId" element={<VivaBemProduct />} />
@@ -43,6 +51,8 @@ const App = () => (
               <Route path="/feed" element={<FeedPage />} />
               <Route path="/salvos" element={<SavedModulesPage />} />
               <Route path="/pesquisar" element={<SearchPage />} />
+              <Route path="/loja" element={<StorePage />} />
+              <Route path="/blog" element={<BlogPage />} />
             </Route>
 
             {/* Admin routes */}

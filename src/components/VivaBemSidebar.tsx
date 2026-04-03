@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Heart, Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Footprints, Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const menuItems = [
   { icon: Home, label: "Início", path: "/home" },
   { icon: MessageCircle, label: "Comunidade", path: "/comunidade" },
   { icon: FileText, label: "Feed", path: "/feed" },
+  { icon: ShoppingBag, label: "Loja", path: "/loja" },
+  { icon: BookOpen, label: "Blog", path: "/blog" },
   { icon: Star, label: "Módulos salvos", path: "/salvos" },
-  { icon: Download, label: "Instalar Aplicativo", path: "/instalar" },
+  { icon: Download, label: "Instalar App", path: "/instalar" },
   { icon: Search, label: "Pesquisar", path: "/pesquisar" },
 ];
 
@@ -30,7 +32,7 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
     >
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 pt-6 pb-2">
-        <Heart className="h-6 w-6 text-primary fill-primary flex-shrink-0" />
+        <Footprints className="h-6 w-6 text-primary flex-shrink-0" />
         <AnimatePresence>
           {!collapsed && (
             <motion.span
@@ -39,7 +41,7 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
               exit={{ opacity: 0, width: 0 }}
               className="text-lg font-bold text-white overflow-hidden whitespace-nowrap"
             >
-              vivabem
+              PéSaúde
             </motion.span>
           )}
         </AnimatePresence>
