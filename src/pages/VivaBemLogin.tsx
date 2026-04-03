@@ -49,7 +49,7 @@ const VivaBemLogin = () => {
           if (clientError) throw clientError;
         }
 
-        toast({ title: "Conta criada! Bem-vinda ao VivaBem! 💚" });
+        toast({ title: "Conta criada! Bem-vindo ao PéSaúde! 🦶" });
         navigate("/home");
       } else {
         // Sign in
