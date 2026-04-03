@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Lock } from "lucide-react";
+import { Footprints, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Product {
@@ -105,21 +105,21 @@ const VivaBemHome = () => {
         <div className="absolute bottom-[-30px] right-20 w-32 h-32 rounded-full bg-primary/10 blur-2xl" />
 
         <div className="relative text-center">
-          <Heart className="h-10 w-10 text-primary fill-primary mx-auto mb-2" />
+          <Footprints className="h-10 w-10 text-primary mx-auto mb-2" />
           <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            viva<span className="text-gradient">bem</span>
+            Pé<span className="text-gradient">Saúde</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground tracking-[0.15em]">
-            Emagrecimento para mulheres
+            Saúde dos Pés
           </p>
           <p className="text-xs text-muted-foreground tracking-widest uppercase mt-0.5">
-            BEM-ESTAR, FITNESS e SAÚDE
+            CUIDADOS, EXERCÍCIOS e BEM-ESTAR
           </p>
         </div>
       </header>
 
       {/* Seus Treinos */}
-      <CardSection title="Seus Treinos">
+      <CardSection title="Seus Cuidados">
         {freeProducts.length > 0 ? (
           freeProducts.map((product) => (
             <ContentCard
@@ -131,10 +131,10 @@ const VivaBemHome = () => {
           ))
         ) : (
           <>
-            <ContentCard title='Cronograma de<br/><b>Treinos</b>' />
+            <ContentCard title='Cuidados<br/><b>Diários</b>' />
             <ContentCard title='Exercícios<br/><b>Semana 1</b>' />
-            <ContentCard title='Exercícios<br/><b>Semana 2</b>' />
-            <ContentCard title='Exercícios<br/><b>Semana 3</b>' />
+            <ContentCard title='Alongamentos<br/><b>Para os Pés</b>' />
+            <ContentCard title='Hidratação<br/><b>Correta</b>' />
           </>
         )}
       </CardSection>
@@ -155,10 +155,10 @@ const VivaBemHome = () => {
       )}
 
       {/* Presentes para você! */}
-      <CardSection title="Presentes para você!">
-        <ContentCard title='Receitas de<br/><b>15 MINUTOS</b>' />
-        <ContentCard title='Plano Detóx de<br/><b>7 DIAS</b>' />
-        <ContentCard title='Como elevar a<br/><b>AUTOESTIMA</b>' />
+      <CardSection title="Dicas Gratuitas">
+        <ContentCard title='Como escolher o<br/><b>CALÇADO IDEAL</b>' />
+        <ContentCard title='Escalda-pés<br/><b>RELAXANTE</b>' />
+        <ContentCard title='Prevenção de<br/><b>CALOSIDADES</b>' />
       </CardSection>
     </div>
   );

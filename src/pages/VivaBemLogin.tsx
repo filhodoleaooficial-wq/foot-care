@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { Footprints } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,14 +49,14 @@ const VivaBemLogin = () => {
           if (clientError) throw clientError;
         }
 
-        toast({ title: "Conta criada! Bem-vinda ao VivaBem! 💚" });
+        toast({ title: "Conta criada! Bem-vindo ao PéSaúde! 🦶" });
         navigate("/home");
       } else {
         // Sign in
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        toast({ title: "Bem-vinda ao VivaBem! 💚" });
+        toast({ title: "Bem-vindo ao PéSaúde! 🦶" });
         navigate("/home");
       }
     } catch (err: any) {
@@ -82,16 +82,16 @@ const VivaBemLogin = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-3">
-            <Heart className="h-10 w-10 text-primary fill-primary" />
+            <Footprints className="h-10 w-10 text-primary" />
           </div>
           <h1 className="text-4xl font-bold text-foreground tracking-tight">
-            viva<span className="text-gradient">bem</span>
+            Pé<span className="text-gradient">Saúde</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground tracking-[0.2em] uppercase">
-            Emagrecimento para mulheres
+            Saúde dos Pés
           </p>
           <p className="text-xs text-muted-foreground mt-1 tracking-widest">
-            BEM-ESTAR, FITNESS e SAÚDE
+            CUIDADOS, EXERCÍCIOS e BEM-ESTAR
           </p>
         </div>
 
@@ -198,6 +198,11 @@ const VivaBemLogin = () => {
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           Ao entrar, você concorda com nossos Termos de Uso e Política de Privacidade.
+        </p>
+        <p className="text-center mt-3">
+          <Link to="/quiz" className="text-xs text-primary hover:underline font-medium">
+            🦶 Ainda não conhece? Faça nosso quiz de saúde dos pés
+          </Link>
         </p>
       </motion.div>
     </div>
