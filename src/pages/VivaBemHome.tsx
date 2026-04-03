@@ -155,10 +155,10 @@ const VivaBemHome = () => {
       )}
 
       {/* Presentes para você! */}
-      <CardSection title="Presentes para você!">
-        <ContentCard title='Receitas de<br/><b>15 MINUTOS</b>' />
-        <ContentCard title='Plano Detóx de<br/><b>7 DIAS</b>' />
-        <ContentCard title='Como elevar a<br/><b>AUTOESTIMA</b>' />
+      <CardSection title="Dicas Gratuitas">
+        <ContentCard title='Como escolher o<br/><b>CALÇADO IDEAL</b>' />
+        <ContentCard title='Escalda-pés<br/><b>RELAXANTE</b>' />
+        <ContentCard title='Prevenção de<br/><b>CALOSIDADES</b>' />
       </CardSection>
     </div>
   );
