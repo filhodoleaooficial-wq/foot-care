@@ -199,6 +199,11 @@ const VivaBemLogin = () => {
         <p className="text-center text-xs text-muted-foreground mt-6">
           Ao entrar, você concorda com nossos Termos de Uso e Política de Privacidade.
         </p>
+        <p className="text-center mt-3">
+          <Link to="/quiz" className="text-xs text-primary hover:underline font-medium">
+            🦶 Ainda não conhece? Faça nosso quiz de saúde dos pés
+          </Link>
+        </p>
       </motion.div>
     </div>
   );
