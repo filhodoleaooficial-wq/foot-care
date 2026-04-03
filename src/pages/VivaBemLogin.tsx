@@ -56,7 +56,7 @@ const VivaBemLogin = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        toast({ title: "Bem-vinda ao VivaBem! 💚" });
+        toast({ title: "Bem-vindo ao PéSaúde! 🦶" });
         navigate("/home");
       }
     } catch (err: any) {
