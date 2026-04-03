@@ -131,10 +131,10 @@ const VivaBemHome = () => {
           ))
         ) : (
           <>
-            <ContentCard title='Cronograma de<br/><b>Treinos</b>' />
+            <ContentCard title='Cuidados<br/><b>Diários</b>' />
             <ContentCard title='Exercícios<br/><b>Semana 1</b>' />
-            <ContentCard title='Exercícios<br/><b>Semana 2</b>' />
-            <ContentCard title='Exercícios<br/><b>Semana 3</b>' />
+            <ContentCard title='Alongamentos<br/><b>Para os Pés</b>' />
+            <ContentCard title='Hidratação<br/><b>Correta</b>' />
           </>
         )}
       </CardSection>
