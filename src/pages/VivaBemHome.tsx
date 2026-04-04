@@ -155,7 +155,14 @@ const VivaBemHome = () => {
                 if (subscription.subscribed) {
                   navigate(`/produto/${product.id}`);
                 } else {
-                  navigate("/dashboard?checkout=prompt");
+                  toast("Conteúdo Premium 🔒", {
+                    description: "Este conteúdo é exclusivo para assinantes. Assine agora para desbloquear!",
+                    action: {
+                      label: "Assinar",
+                      onClick: () => navigate("/dashboard?checkout=prompt"),
+                    },
+                    duration: 5000,
+                  });
                 }
               }}
             />
