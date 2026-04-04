@@ -149,8 +149,14 @@ const VivaBemHome = () => {
               key={product.id}
               title={product.name}
               imageUrl={product.cover_url}
-              locked
-              onClick={() => navigate(`/produto/${product.id}`)}
+              locked={!subscription.subscribed}
+              onClick={() => {
+                if (subscription.subscribed) {
+                  navigate(`/produto/${product.id}`);
+                } else {
+                  navigate("/dashboard?checkout=prompt");
+                }
+              }}
             />
           ))}
         </CardSection>
