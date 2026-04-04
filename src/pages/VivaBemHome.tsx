@@ -78,6 +78,7 @@ const ContentCard = ({
 
 const VivaBemHome = () => {
   const navigate = useNavigate();
+  const { subscription } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
