@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Footprints, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
