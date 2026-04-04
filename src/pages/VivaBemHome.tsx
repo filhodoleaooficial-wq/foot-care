@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Footprints, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Product {
   id: string;
@@ -77,6 +78,7 @@ const ContentCard = ({
 
 const VivaBemHome = () => {
   const navigate = useNavigate();
+  const { subscription } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -147,8 +149,14 @@ const VivaBemHome = () => {
               key={product.id}
               title={product.name}
               imageUrl={product.cover_url}
-              locked
-              onClick={() => navigate(`/produto/${product.id}`)}
+              locked={!subscription.subscribed}
+              onClick={() => {
+                if (subscription.subscribed) {
+                  navigate(`/produto/${product.id}`);
+                } else {
+                  navigate("/dashboard?checkout=prompt");
+                }
+              }}
             />
           ))}
         </CardSection>
