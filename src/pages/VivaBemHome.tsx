@@ -116,6 +116,8 @@ const VivaBemHome = () => {
   const freeProducts = products.filter((p) => p.offer_type === "free");
   const premiumProducts = products.filter((p) => ["main", "principal", "order_bump"].includes(p.offer_type));
   const dicaProducts = products.filter((p) => p.offer_type === "dica");
+  const exercicioProducts = products.filter((p) => p.offer_type === "exercicio");
+  const receitaProducts = products.filter((p) => p.offer_type === "receita");
 
   return (
     <div className="min-h-screen bg-background">
@@ -208,6 +210,33 @@ const VivaBemHome = () => {
           </>
         )}
       </CardSection>
+      {/* Exercícios para os Pés */}
+      {exercicioProducts.length > 0 && (
+        <CardSection title="Exercícios para os Pés">
+          {exercicioProducts.map((product) => (
+            <ContentCard
+              key={product.id}
+              title={product.name}
+              imageUrl={product.cover_url}
+              onClick={() => navigate(`/produto/${product.id}`)}
+            />
+          ))}
+        </CardSection>
+      )}
+
+      {/* Receitas Caseiras */}
+      {receitaProducts.length > 0 && (
+        <CardSection title="Receitas Caseiras">
+          {receitaProducts.map((product) => (
+            <ContentCard
+              key={product.id}
+              title={product.name}
+              imageUrl={product.cover_url}
+              onClick={() => navigate(`/produto/${product.id}`)}
+            />
+          ))}
+        </CardSection>
+      )}
     </div>
   );
 };
