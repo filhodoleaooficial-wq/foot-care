@@ -112,9 +112,10 @@ const VivaBemHome = () => {
     fetchProducts();
   }, []);
 
-  // Split products by offer_type for demo sections
+  // Split products by offer_type
   const freeProducts = products.filter((p) => p.offer_type === "free");
-  const premiumProducts = products.filter((p) => p.offer_type !== "free");
+  const premiumProducts = products.filter((p) => ["main", "principal", "order_bump"].includes(p.offer_type));
+  const dicaProducts = products.filter((p) => p.offer_type === "dica");
 
   return (
     <div className="min-h-screen bg-background">
