@@ -22,8 +22,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const STRIPE_PRICES = {
-  monthly: "price_1T8vZP058IAMZE1Yn4UJwkMg",
-  yearly: "price_1T8vZi058IAMZE1YOF8WZW9f",
+  monthly: "price_1TIJ6r058IAMZE1YTHa9zmsf",
+  yearly: "price_1TJ40q058IAMZE1Y3WLWiwNw",
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
