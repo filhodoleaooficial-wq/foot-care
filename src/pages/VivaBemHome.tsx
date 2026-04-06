@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Footprints, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, STRIPE_PRICES } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface Product {
@@ -81,6 +81,24 @@ const VivaBemHome = () => {
   const navigate = useNavigate();
   const { subscription } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handlePremiumCheckout = async () => {
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: STRIPE_PRICES.monthly },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast.error("Erro ao iniciar pagamento: " + (err.message || "Tente novamente"));
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -156,12 +174,12 @@ const VivaBemHome = () => {
                   navigate(`/produto/${product.id}`);
                 } else {
                   toast("Conteúdo Premium 🔒", {
-                    description: "Este conteúdo é exclusivo para assinantes. Assine agora para desbloquear!",
+                    description: "Este conteúdo é exclusivo para assinantes. Assine por R$97,90/mês para desbloquear!",
                     action: {
-                      label: "Assinar",
-                      onClick: () => navigate("/dashboard?checkout=prompt"),
+                      label: checkoutLoading ? "Aguarde..." : "Assinar agora",
+                      onClick: () => handlePremiumCheckout(),
                     },
-                    duration: 5000,
+                    duration: 6000,
                   });
                 }
               }}
