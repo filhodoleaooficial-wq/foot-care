@@ -116,6 +116,8 @@ const VivaBemHome = () => {
   const freeProducts = products.filter((p) => p.offer_type === "free");
   const premiumProducts = products.filter((p) => ["main", "principal", "order_bump"].includes(p.offer_type));
   const dicaProducts = products.filter((p) => p.offer_type === "dica");
+  const exercicioProducts = products.filter((p) => p.offer_type === "exercicio");
+  const receitaProducts = products.filter((p) => p.offer_type === "receita");
 
   return (
     <div className="min-h-screen bg-background">
