@@ -112,9 +112,10 @@ const VivaBemHome = () => {
     fetchProducts();
   }, []);
 
-  // Split products by offer_type for demo sections
+  // Split products by offer_type
   const freeProducts = products.filter((p) => p.offer_type === "free");
-  const premiumProducts = products.filter((p) => p.offer_type !== "free");
+  const premiumProducts = products.filter((p) => ["main", "principal", "order_bump"].includes(p.offer_type));
+  const dicaProducts = products.filter((p) => p.offer_type === "dica");
 
   return (
     <div className="min-h-screen bg-background">
@@ -190,9 +191,22 @@ const VivaBemHome = () => {
 
       {/* Presentes para você! */}
       <CardSection title="Dicas Gratuitas">
-        <ContentCard title='Como escolher o<br/><b>CALÇADO IDEAL</b>' />
-        <ContentCard title='Escalda-pés<br/><b>RELAXANTE</b>' />
-        <ContentCard title='Prevenção de<br/><b>CALOSIDADES</b>' />
+        {dicaProducts.length > 0 ? (
+          dicaProducts.map((product) => (
+            <ContentCard
+              key={product.id}
+              title={product.name}
+              imageUrl={product.cover_url}
+              onClick={() => navigate(`/produto/${product.id}`)}
+            />
+          ))
+        ) : (
+          <>
+            <ContentCard title='Como escolher o<br/><b>CALÇADO IDEAL</b>' />
+            <ContentCard title='Escalda-pés<br/><b>RELAXANTE</b>' />
+            <ContentCard title='Prevenção de<br/><b>CALOSIDADES</b>' />
+          </>
+        )}
       </CardSection>
     </div>
   );
