@@ -174,12 +174,12 @@ const VivaBemHome = () => {
                   navigate(`/produto/${product.id}`);
                 } else {
                   toast("Conteúdo Premium 🔒", {
-                    description: "Este conteúdo é exclusivo para assinantes. Assine agora para desbloquear!",
+                    description: "Este conteúdo é exclusivo para assinantes. Assine por R$97,90/mês para desbloquear!",
                     action: {
-                      label: "Assinar",
-                      onClick: () => navigate("/dashboard?checkout=prompt"),
+                      label: checkoutLoading ? "Aguarde..." : "Assinar agora",
+                      onClick: () => handlePremiumCheckout(),
                     },
-                    duration: 5000,
+                    duration: 6000,
                   });
                 }
               }}
