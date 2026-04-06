@@ -191,9 +191,22 @@ const VivaBemHome = () => {
 
       {/* Presentes para você! */}
       <CardSection title="Dicas Gratuitas">
-        <ContentCard title='Como escolher o<br/><b>CALÇADO IDEAL</b>' />
-        <ContentCard title='Escalda-pés<br/><b>RELAXANTE</b>' />
-        <ContentCard title='Prevenção de<br/><b>CALOSIDADES</b>' />
+        {dicaProducts.length > 0 ? (
+          dicaProducts.map((product) => (
+            <ContentCard
+              key={product.id}
+              title={product.name}
+              imageUrl={product.cover_url}
+              onClick={() => navigate(`/produto/${product.id}`)}
+            />
+          ))
+        ) : (
+          <>
+            <ContentCard title='Como escolher o<br/><b>CALÇADO IDEAL</b>' />
+            <ContentCard title='Escalda-pés<br/><b>RELAXANTE</b>' />
+            <ContentCard title='Prevenção de<br/><b>CALOSIDADES</b>' />
+          </>
+        )}
       </CardSection>
     </div>
   );
