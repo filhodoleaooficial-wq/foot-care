@@ -81,6 +81,24 @@ const VivaBemHome = () => {
   const navigate = useNavigate();
   const { subscription } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handlePremiumCheckout = async () => {
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: STRIPE_PRICES.monthly },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast.error("Erro ao iniciar pagamento: " + (err.message || "Tente novamente"));
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
