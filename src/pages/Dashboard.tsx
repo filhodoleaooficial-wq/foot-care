@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown, Copy, Check, MessageSquare } from "lucide-react";
+import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown, Copy, Check, MessageSquare, Share2 } from "lucide-react";
+import DeployDialog from "@/components/DeployDialog";
 import { useAuth, STRIPE_PRICES } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,7 @@ const Dashboard = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [copiedAppId, setCopiedAppId] = useState<string | null>(null);
+  const [deployApp, setDeployApp] = useState<App | null>(null);
   const [sidebarCounts, setSidebarCounts] = useState<SidebarCounts>({ apps: 0, products: 0 });
   const { user, signOut, subscription, checkSubscription } = useAuth();
   const { toast } = useToast();
@@ -274,7 +276,7 @@ const Dashboard = () => {
                 <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">Meus Aplicativos</h1>
                 <p className="mt-1 text-muted-foreground">Gerencie e crie seus apps de cuidados com os pés.</p>
               </div>
-              <Link to="/create-app">
+              <Link to="/admin/create-app">
                 <Button variant="hero" className="gap-2">
                   <Plus className="h-4 w-4" />
                   Criar Novo App
@@ -332,6 +334,22 @@ const Dashboard = () => {
 
                     <div className="mt-6 flex flex-wrap gap-2">
                       <Button
+                        variant="hero"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => setDeployApp(app)}
+                      >
+                        <Share2 className="h-3 w-3" /> Deploy
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => navigate(`/admin/app/${app.id}/products`)}
+                      >
+                        <Package className="h-3 w-3" /> Produtos
+                      </Button>
+                      <Button
                         variant="outline"
                         size="sm"
                         className="gap-1.5 text-xs"
@@ -346,43 +364,12 @@ const Dashboard = () => {
                         {copiedAppId === app.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                         {copiedAppId === app.id ? "Copiado" : "Link"}
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs"
-                        onClick={() => navigate(`/app/${app.id}/products`)}
-                      >
-                        <Package className="h-3 w-3" /> Produtos
-                      </Button>
-                      <Button
-                        variant="hero"
-                        size="sm"
-                        className="gap-1.5 text-xs"
-                        onClick={async () => {
-                          const newStatus = app.status === "published" ? "draft" : "published";
-                          const { error } = await supabase
-                            .from("apps")
-                            .update({ status: newStatus })
-                            .eq("id", app.id);
-                          if (error) {
-                            toast({ title: "Erro", description: error.message, variant: "destructive" });
-                          } else {
-                            setApps((prev) =>
-                              prev.map((a) => (a.id === app.id ? { ...a, status: newStatus } : a))
-                            );
-                            toast({ title: newStatus === "published" ? "App publicado!" : "App despublicado" });
-                          }
-                        }}
-                      >
-                        <Rocket className="h-3 w-3" />
-                        {app.status === "published" ? "Despublicar" : "Publicar"}
-                      </Button>
                     </div>
                   </motion.div>
                 ))}
 
                 {/* Create new card */}
-                <Link to="/create-app">
+                <Link to="/admin/create-app">
                   <motion.div
                     className="flex h-full min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-accent/30 p-6 text-center transition-all hover:border-primary/60 hover:bg-accent/50"
                     initial={{ opacity: 0, y: 20 }}
@@ -401,6 +388,33 @@ const Dashboard = () => {
           </>
         )}
       </main>
+
+      {/* Deploy dialog */}
+      {deployApp && (
+        <DeployDialog
+          open={!!deployApp}
+          onOpenChange={(open) => !open && setDeployApp(null)}
+          appId={deployApp.id}
+          appName={deployApp.name}
+          status={deployApp.status}
+          onPublish={async () => {
+            const newStatus = deployApp.status === "published" ? "draft" : "published";
+            const { error } = await supabase
+              .from("apps")
+              .update({ status: newStatus })
+              .eq("id", deployApp.id);
+            if (error) {
+              toast({ title: "Erro", description: error.message, variant: "destructive" });
+            } else {
+              setApps((prev) =>
+                prev.map((a) => (a.id === deployApp.id ? { ...a, status: newStatus } : a))
+              );
+              setDeployApp({ ...deployApp, status: newStatus });
+              toast({ title: newStatus === "published" ? "App publicado!" : "App despublicado" });
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
