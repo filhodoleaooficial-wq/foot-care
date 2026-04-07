@@ -25,6 +25,10 @@ import SearchPage from "./pages/SearchPage";
 import StorePage from "./pages/StorePage";
 import BlogPage from "./pages/BlogPage";
 import NotFound from "./pages/NotFound";
+import ClientAppLayout from "./pages/client/ClientAppLayout";
+import ClientLogin from "./pages/client/ClientLogin";
+import ClientHome from "./pages/client/ClientHome";
+import ClientProduct from "./pages/client/ClientProduct";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +57,14 @@ const App = () => (
               <Route path="/pesquisar" element={<SearchPage />} />
               <Route path="/loja" element={<StorePage />} />
               <Route path="/blog" element={<BlogPage />} />
+            </Route>
+
+            {/* Dynamic client app routes (shareable link) */}
+            <Route path="/app/:appId" element={<ClientAppLayout />}>
+              <Route index element={<ClientLogin />} />
+              <Route path="login" element={<ClientLogin />} />
+              <Route path="home" element={<ClientHome />} />
+              <Route path="produto/:productId" element={<ClientProduct />} />
             </Route>
 
             {/* Admin routes */}
