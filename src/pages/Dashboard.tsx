@@ -388,6 +388,33 @@ const Dashboard = () => {
           </>
         )}
       </main>
+
+      {/* Deploy dialog */}
+      {deployApp && (
+        <DeployDialog
+          open={!!deployApp}
+          onOpenChange={(open) => !open && setDeployApp(null)}
+          appId={deployApp.id}
+          appName={deployApp.name}
+          status={deployApp.status}
+          onPublish={async () => {
+            const newStatus = deployApp.status === "published" ? "draft" : "published";
+            const { error } = await supabase
+              .from("apps")
+              .update({ status: newStatus })
+              .eq("id", deployApp.id);
+            if (error) {
+              toast({ title: "Erro", description: error.message, variant: "destructive" });
+            } else {
+              setApps((prev) =>
+                prev.map((a) => (a.id === deployApp.id ? { ...a, status: newStatus } : a))
+              );
+              setDeployApp({ ...deployApp, status: newStatus });
+              toast({ title: newStatus === "published" ? "App publicado!" : "App despublicado" });
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
