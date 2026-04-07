@@ -29,6 +29,7 @@ const Dashboard = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [copiedAppId, setCopiedAppId] = useState<string | null>(null);
+  const [deployApp, setDeployApp] = useState<App | null>(null);
   const [sidebarCounts, setSidebarCounts] = useState<SidebarCounts>({ apps: 0, products: 0 });
   const { user, signOut, subscription, checkSubscription } = useAuth();
   const { toast } = useToast();
