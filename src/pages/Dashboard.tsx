@@ -276,7 +276,7 @@ const Dashboard = () => {
                 <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">Meus Aplicativos</h1>
                 <p className="mt-1 text-muted-foreground">Gerencie e crie seus apps de cuidados com os pés.</p>
               </div>
-              <Link to="/create-app">
+              <Link to="/admin/create-app">
                 <Button variant="hero" className="gap-2">
                   <Plus className="h-4 w-4" />
                   Criar Novo App
