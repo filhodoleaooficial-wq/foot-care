@@ -369,7 +369,7 @@ const Dashboard = () => {
                 ))}
 
                 {/* Create new card */}
-                <Link to="/create-app">
+                <Link to="/admin/create-app">
                   <motion.div
                     className="flex h-full min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-accent/30 p-6 text-center transition-all hover:border-primary/60 hover:bg-accent/50"
                     initial={{ opacity: 0, y: 20 }}
