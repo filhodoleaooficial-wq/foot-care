@@ -218,7 +218,21 @@ const VivaBemHome = () => {
               key={product.id}
               title={product.name}
               imageUrl={product.cover_url}
-              onClick={() => navigate(`/produto/${product.id}`)}
+              locked={!subscription.subscribed}
+              onClick={() => {
+                if (subscription.subscribed) {
+                  navigate(`/produto/${product.id}`);
+                } else {
+                  toast("Conteúdo Premium 🔒", {
+                    description: "Exercícios exclusivos para assinantes. Assine por R$97,90/mês para desbloquear!",
+                    action: {
+                      label: checkoutLoading ? "Aguarde..." : "Assinar agora",
+                      onClick: () => handlePremiumCheckout(),
+                    },
+                    duration: 6000,
+                  });
+                }
+              }}
             />
           ))}
         </CardSection>
