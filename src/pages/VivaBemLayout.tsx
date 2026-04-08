@@ -1,16 +1,17 @@
 import { Outlet } from "react-router-dom";
 import VivaBemSidebar from "@/components/VivaBemSidebar";
-import { useState } from "react";
+import { AppConfigProvider } from "@/contexts/AppConfigContext";
 
 const VivaBemLayout = () => {
   return (
-    <div className="min-h-screen flex">
-      <VivaBemSidebar />
-      {/* Main content — offset by sidebar width */}
-      <main className="flex-1 ml-56 transition-all duration-300 min-h-screen">
-        <Outlet />
-      </main>
-    </div>
+    <AppConfigProvider>
+      <div className="min-h-screen flex">
+        <VivaBemSidebar />
+        <main className="flex-1 ml-56 transition-all duration-300 min-h-screen">
+          <Outlet />
+        </main>
+      </div>
+    </AppConfigProvider>
   );
 };
 
