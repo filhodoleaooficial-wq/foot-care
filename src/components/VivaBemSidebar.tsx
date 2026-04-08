@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Footprints, Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen } from "lucide-react";
+import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAppConfig } from "@/contexts/AppConfigContext";
 
 const menuItems = [
   { icon: Home, label: "Início", path: "/home" },
@@ -22,6 +23,10 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { app } = useAppConfig();
+
+  const accentColor = app?.primary_color || "hsl(var(--vivabem-green))";
+  const appName = app?.name || "App";
 
   return (
     <aside
@@ -30,9 +35,18 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
       }`}
       style={{ backgroundColor: "hsl(var(--sidebar-background))" }}
     >
-      {/* Logo */}
+      {/* Logo / App name */}
       <div className="flex items-center gap-2 px-4 pt-6 pb-2">
-        <Footprints className="h-6 w-6 text-primary flex-shrink-0" />
+        {app?.logo_url ? (
+          <img src={app.logo_url} alt={appName} className="h-6 w-6 rounded-lg object-cover flex-shrink-0" />
+        ) : (
+          <div
+            className="h-6 w-6 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: accentColor }}
+          >
+            <span className="text-xs font-bold text-white">{appName.charAt(0)}</span>
+          </div>
+        )}
         <AnimatePresence>
           {!collapsed && (
             <motion.span
@@ -41,7 +55,7 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
               exit={{ opacity: 0, width: 0 }}
               className="text-lg font-bold text-white overflow-hidden whitespace-nowrap"
             >
-              PéSaúde
+              {appName}
             </motion.span>
           )}
         </AnimatePresence>
@@ -53,7 +67,7 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
           className={`rounded-full flex items-center justify-center font-bold text-white text-sm ${
             collapsed ? "w-9 h-9 mx-auto" : "w-10 h-10"
           }`}
-          style={{ backgroundColor: "hsl(var(--vivabem-green))" }}
+          style={{ backgroundColor: accentColor }}
         >
           {points}
         </div>
@@ -69,9 +83,10 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
               onClick={() => navigate(item.path)}
               className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-sidebar-accent text-primary"
+                  ? "bg-sidebar-accent"
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white"
               }`}
+              style={isActive ? { color: accentColor } : undefined}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
               <AnimatePresence>
