@@ -17,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import AppCreation from "./pages/AppCreation";
 import ProductsManagement from "./pages/ProductsManagement";
 import ModulesManagement from "./pages/ModulesManagement";
+import SectionsManagement from "./pages/SectionsManagement";
 import WhatsAppPage from "./pages/WhatsAppPage";
 import CommunityPage from "./pages/CommunityPage";
 import FeedPage from "./pages/FeedPage";
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/admin/create-app" element={<ProtectedRoute><AppCreation /></ProtectedRoute>} />
             <Route path="/admin/app/:appId/products" element={<ProtectedRoute><ProductsManagement /></ProtectedRoute>} />
             <Route path="/admin/product/:productId/modules" element={<ProtectedRoute><ModulesManagement /></ProtectedRoute>} />
+            <Route path="/admin/app/:appId/sections" element={<ProtectedRoute><SectionsManagement /></ProtectedRoute>} />
             <Route path="/admin/whatsapp" element={<ProtectedRoute><WhatsAppPage /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />

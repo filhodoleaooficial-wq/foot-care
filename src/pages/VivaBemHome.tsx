@@ -13,18 +13,15 @@ interface Product {
   description: string | null;
   cover_url: string | null;
   offer_type: string;
+  section_id: string | null;
 }
 
-// Section configuration derived from offer_type
-const SECTION_MAP: Record<string, { title: string; premium: boolean; order: number }> = {
-  free: { title: "Seus Cuidados", premium: false, order: 1 },
-  main: { title: "Acelere seus Resultados", premium: true, order: 2 },
-  principal: { title: "Acelere seus Resultados", premium: true, order: 2 },
-  order_bump: { title: "Acelere seus Resultados", premium: true, order: 2 },
-  dica: { title: "Dicas Gratuitas", premium: false, order: 3 },
-  exercicio: { title: "Exercícios para os Pés", premium: true, order: 4 },
-  receita: { title: "Receitas Caseiras", premium: false, order: 5 },
-};
+interface SectionRow {
+  id: string;
+  title: string;
+  sort_order: number;
+  is_premium: boolean;
+}
 
 // Horizontal scroll section component
 const CardSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -90,6 +87,7 @@ const VivaBemHome = () => {
   const { subscription } = useAuth();
   const { app, loading: appLoading } = useAppConfig();
   const [products, setProducts] = useState<Product[]>([]);
+  const [dbSections, setDbSections] = useState<SectionRow[]>([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const handlePremiumCheckout = async () => {
@@ -109,34 +107,66 @@ const VivaBemHome = () => {
 
   useEffect(() => {
     if (!app) return;
-    const fetchProducts = async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, description, cover_url, offer_type")
-        .eq("app_id", app.id)
-        .eq("is_published", true)
-        .order("sort_order");
-      setProducts(data || []);
+    const fetchData = async () => {
+      const [prodRes, secRes] = await Promise.all([
+        supabase
+          .from("products")
+          .select("id, name, description, cover_url, offer_type, section_id")
+          .eq("app_id", app.id)
+          .eq("is_published", true)
+          .order("sort_order"),
+        supabase
+          .from("sections")
+          .select("id, title, sort_order, is_premium")
+          .eq("app_id", app.id)
+          .eq("is_active", true)
+          .order("sort_order"),
+      ]);
+      setProducts(prodRes.data || []);
+      setDbSections(secRes.data || []);
     };
-    fetchProducts();
+    fetchData();
   }, [app]);
 
-  // Group products into sections dynamically
+  // Group products into sections from DB
   const sections: Section[] = (() => {
-    const map = new Map<string, Section>();
-    for (const product of products) {
-      const config = SECTION_MAP[product.offer_type] || {
-        title: product.offer_type.charAt(0).toUpperCase() + product.offer_type.slice(1),
-        premium: false,
-        order: 99,
-      };
-      const key = config.title;
-      if (!map.has(key)) {
-        map.set(key, { title: config.title, premium: config.premium, order: config.order, products: [] });
+    if (dbSections.length === 0) {
+      // Fallback: group by offer_type if no sections configured
+      const map = new Map<string, Section>();
+      for (const product of products) {
+        const key = product.offer_type || "free";
+        if (!map.has(key)) {
+          map.set(key, {
+            title: key.charAt(0).toUpperCase() + key.slice(1),
+            premium: false,
+            order: 99,
+            products: [],
+          });
+        }
+        map.get(key)!.products.push(product);
       }
-      map.get(key)!.products.push(product);
+      return Array.from(map.values()).sort((a, b) => a.order - b.order);
     }
-    return Array.from(map.values()).sort((a, b) => a.order - b.order);
+
+    // Use DB sections
+    const result: Section[] = [];
+    for (const sec of dbSections) {
+      const sectionProducts = products.filter((p) => p.section_id === sec.id);
+      if (sectionProducts.length > 0) {
+        result.push({
+          title: sec.title,
+          premium: sec.is_premium,
+          order: sec.sort_order,
+          products: sectionProducts,
+        });
+      }
+    }
+    // Products without a section go into "Outros"
+    const unassigned = products.filter((p) => !p.section_id || !dbSections.find((s) => s.id === p.section_id));
+    if (unassigned.length > 0) {
+      result.push({ title: "Outros", premium: false, order: 999, products: unassigned });
+    }
+    return result.sort((a, b) => a.order - b.order);
   })();
 
   if (appLoading) {

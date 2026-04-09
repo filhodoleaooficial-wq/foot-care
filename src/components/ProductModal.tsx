@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,7 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
   const [releaseType, setReleaseType] = useState(existingProduct?.release_type || "immediate");
   const [releaseValue, setReleaseValue] = useState(existingProduct?.release_value || "");
   const [offerType, setOfferType] = useState(existingProduct?.offer_type || "main");
+  const [sectionId, setSectionId] = useState(existingProduct?.section_id || "");
   const [sortOrder, setSortOrder] = useState(existingProduct?.sort_order?.toString() || "0");
   const [columnCount, setColumnCount] = useState(existingProduct?.column_count?.toString() || "2");
   const [externalProductId, setExternalProductId] = useState(existingProduct?.external_product_id || "");
@@ -45,9 +46,20 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
   const [logoUnlockedUrl, setLogoUnlockedUrl] = useState<string | null>(existingProduct?.logo_unlocked_url || null);
   const [logoLockedUrl, setLogoLockedUrl] = useState<string | null>(existingProduct?.logo_locked_url || null);
   const [saving, setSaving] = useState(false);
+  const [sections, setSections] = useState<{ id: string; title: string }[]>([]);
   const unlockedRef = useRef<HTMLInputElement>(null);
   const lockedRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!open) return;
+    supabase
+      .from("sections")
+      .select("id, title")
+      .eq("app_id", appId)
+      .order("sort_order")
+      .then(({ data }) => setSections(data || []));
+  }, [open, appId]);
 
   const uploadFile = async (file: File) => {
     const ext = file.name.split(".").pop();
@@ -84,6 +96,7 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
         release_type: releaseType,
         release_value: releaseValue || null,
         offer_type: offerType,
+        section_id: sectionId || null,
         sort_order: parseInt(sortOrder) || 0,
         column_count: parseInt(columnCount) || 2,
         external_product_id: externalProductId || null,
@@ -144,6 +157,22 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
               </SelectContent>
             </Select>
           </div>
+
+          {/* Section */}
+          {sections.length > 0 && (
+            <div className="space-y-2">
+              <Label>Seção na Home</Label>
+              <Select value={sectionId} onValueChange={setSectionId}>
+                <SelectTrigger><SelectValue placeholder="Selecione uma seção" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhuma</SelectItem>
+                  {sections.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Release type */}
           <div className="space-y-2">

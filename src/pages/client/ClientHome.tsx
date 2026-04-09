@@ -10,6 +10,14 @@ interface Product {
   name: string;
   description: string | null;
   cover_url: string | null;
+  section_id: string | null;
+}
+
+interface SectionRow {
+  id: string;
+  title: string;
+  sort_order: number;
+  is_premium: boolean;
 }
 
 interface Banner {
@@ -23,6 +31,7 @@ const ClientHome = () => {
   const { appId } = useParams();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
+  const [dbSections, setDbSections] = useState<SectionRow[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,12 +41,14 @@ const ClientHome = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [prodRes, bannerRes] = await Promise.all([
-        supabase.from("products").select("id, name, description, cover_url").eq("app_id", appId!).eq("is_published", true).order("sort_order"),
+      const [prodRes, bannerRes, secRes] = await Promise.all([
+        supabase.from("products").select("id, name, description, cover_url, section_id").eq("app_id", appId!).eq("is_published", true).order("sort_order"),
         supabase.from("banners").select("id, image_url, link_url").eq("app_id", appId!).eq("is_active", true).order("sort_order"),
+        supabase.from("sections").select("id, title, sort_order, is_premium").eq("app_id", appId!).eq("is_active", true).order("sort_order"),
       ]);
       setProducts(prodRes.data || []);
       setBanners(bannerRes.data || []);
+      setDbSections(secRes.data || []);
     };
     fetchData();
   }, [appId]);
@@ -54,6 +65,22 @@ const ClientHome = () => {
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Build grouped sections
+  const groupedSections = (() => {
+    const source = searchQuery ? filteredProducts : products;
+    if (dbSections.length === 0) {
+      return [{ title: "Conteúdos", premium: false, products: source }];
+    }
+    const result: { title: string; premium: boolean; products: Product[] }[] = [];
+    for (const sec of dbSections) {
+      const items = source.filter((p) => p.section_id === sec.id);
+      if (items.length > 0) result.push({ title: sec.title, premium: sec.is_premium, products: items });
+    }
+    const unassigned = source.filter((p) => !p.section_id || !dbSections.find((s) => s.id === p.section_id));
+    if (unassigned.length > 0) result.push({ title: "Outros", premium: false, products: unassigned });
+    return result;
+  })();
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -141,77 +168,73 @@ const ClientHome = () => {
           </div>
         )}
 
-        {/* Products */}
-        <div className="mt-6">
-          <h2 className="text-lg font-bold text-foreground mb-3">
-            {products.length > 0 ? "Conteúdos" : "Nenhum conteúdo disponível"}
-          </h2>
-
-          {filteredProducts.length === 0 && products.length > 0 && (
+        {/* Products grouped by sections */}
+        <div className="mt-6 space-y-6">
+          {filteredProducts.length === 0 && products.length > 0 && searchQuery && (
             <p className="text-sm text-muted-foreground py-6 text-center">
               Nenhum resultado para "{searchQuery}"
             </p>
           )}
 
-          {app.visual_style === "netflix" ? (
-            // Netflix-style horizontal scroll
-            <div className="space-y-6">
-              {filteredProducts.map((product) => (
-                <div key={product.id}>
-                  <button
-                    onClick={() => navigate(`/app/${appId}/product/${product.id}`)}
-                    className="group flex items-center justify-between w-full text-left mb-2"
-                  >
-                    <h3 className="font-bold text-foreground text-sm">{product.name}</h3>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                  </button>
-                  <div
-                    className="h-36 rounded-2xl bg-gradient-to-br from-muted to-muted/50 overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
-                    onClick={() => navigate(`/app/${appId}/product/${product.id}`)}
-                    style={product.cover_url ? { backgroundImage: `url(${product.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
-                  >
-                    {!product.cover_url && (
-                      <div className="flex h-full items-center justify-center">
-                        <BookOpen className="h-10 w-10 text-muted-foreground/40" />
+          {groupedSections.map((section) => (
+            <div key={section.title}>
+              <h2 className="text-lg font-bold text-foreground mb-3">{section.title}</h2>
+              {app.visual_style === "netflix" ? (
+                <div className="space-y-4">
+                  {section.products.map((product) => (
+                    <div key={product.id}>
+                      <button
+                        onClick={() => navigate(`/app/${appId}/product/${product.id}`)}
+                        className="group flex items-center justify-between w-full text-left mb-2"
+                      >
+                        <h3 className="font-bold text-foreground text-sm">{product.name}</h3>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                      </button>
+                      <div
+                        className="h-36 rounded-2xl bg-gradient-to-br from-muted to-muted/50 overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
+                        onClick={() => navigate(`/app/${appId}/product/${product.id}`)}
+                        style={product.cover_url ? { backgroundImage: `url(${product.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+                      >
+                        {!product.cover_url && (
+                          <div className="flex h-full items-center justify-center">
+                            <BookOpen className="h-10 w-10 text-muted-foreground/40" />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  {product.description && (
-                    <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">{product.description}</p>
-                  )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : (
-            // Grid style
-            <div className="grid grid-cols-2 gap-3">
-              {filteredProducts.map((product) => (
-                <motion.div
-                  key={product.id}
-                  className="cursor-pointer rounded-2xl border bg-card overflow-hidden shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
-                  onClick={() => navigate(`/app/${appId}/product/${product.id}`)}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  <div
-                    className="aspect-[4/3] bg-gradient-to-br from-muted to-muted/50"
-                    style={product.cover_url ? { backgroundImage: `url(${product.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
-                  >
-                    {!product.cover_url && (
-                      <div className="flex h-full items-center justify-center">
-                        <BookOpen className="h-8 w-8 text-muted-foreground/40" />
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {section.products.map((product) => (
+                    <motion.div
+                      key={product.id}
+                      className="cursor-pointer rounded-2xl border bg-card overflow-hidden shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
+                      onClick={() => navigate(`/app/${appId}/product/${product.id}`)}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <div
+                        className="aspect-[4/3] bg-gradient-to-br from-muted to-muted/50"
+                        style={product.cover_url ? { backgroundImage: `url(${product.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+                      >
+                        {!product.cover_url && (
+                          <div className="flex h-full items-center justify-center">
+                            <BookOpen className="h-8 w-8 text-muted-foreground/40" />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <h3 className="font-bold text-foreground text-sm leading-tight">{product.name}</h3>
-                    {product.description && (
-                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{product.description}</p>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
+                      <div className="p-3">
+                        <h3 className="font-bold text-foreground text-sm leading-tight">{product.name}</h3>
+                        {product.description && (
+                          <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{product.description}</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          ))}
 
           {products.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
