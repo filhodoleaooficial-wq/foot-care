@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown, Copy, Check, MessageSquare, Share2 } from "lucide-react";
+import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown, Copy, Check, MessageSquare, Share2, Layers } from "lucide-react";
 import DeployDialog from "@/components/DeployDialog";
 import { useAuth, STRIPE_PRICES } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -348,6 +348,14 @@ const Dashboard = () => {
                         onClick={() => navigate(`/admin/app/${app.id}/products`)}
                       >
                         <Package className="h-3 w-3" /> Produtos
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => navigate(`/admin/app/${app.id}/sections`)}
+                      >
+                        <Layers className="h-3 w-3" /> Seções
                       </Button>
                       <Button
                         variant="outline"
