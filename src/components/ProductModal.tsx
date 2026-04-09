@@ -158,6 +158,22 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
             </Select>
           </div>
 
+          {/* Section */}
+          {sections.length > 0 && (
+            <div className="space-y-2">
+              <Label>Seção na Home</Label>
+              <Select value={sectionId} onValueChange={setSectionId}>
+                <SelectTrigger><SelectValue placeholder="Selecione uma seção" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhuma</SelectItem>
+                  {sections.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Release type */}
           <div className="space-y-2">
             <Label>Quando liberar acesso?</Label>
