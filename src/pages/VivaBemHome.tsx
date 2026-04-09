@@ -13,18 +13,15 @@ interface Product {
   description: string | null;
   cover_url: string | null;
   offer_type: string;
+  section_id: string | null;
 }
 
-// Section configuration derived from offer_type
-const SECTION_MAP: Record<string, { title: string; premium: boolean; order: number }> = {
-  free: { title: "Seus Cuidados", premium: false, order: 1 },
-  main: { title: "Acelere seus Resultados", premium: true, order: 2 },
-  principal: { title: "Acelere seus Resultados", premium: true, order: 2 },
-  order_bump: { title: "Acelere seus Resultados", premium: true, order: 2 },
-  dica: { title: "Dicas Gratuitas", premium: false, order: 3 },
-  exercicio: { title: "Exercícios para os Pés", premium: true, order: 4 },
-  receita: { title: "Receitas Caseiras", premium: false, order: 5 },
-};
+interface SectionRow {
+  id: string;
+  title: string;
+  sort_order: number;
+  is_premium: boolean;
+}
 
 // Horizontal scroll section component
 const CardSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
