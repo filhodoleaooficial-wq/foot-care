@@ -66,6 +66,22 @@ const ClientHome = () => {
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Build grouped sections
+  const groupedSections = (() => {
+    const source = searchQuery ? filteredProducts : products;
+    if (dbSections.length === 0) {
+      return [{ title: "Conteúdos", premium: false, products: source }];
+    }
+    const result: { title: string; premium: boolean; products: Product[] }[] = [];
+    for (const sec of dbSections) {
+      const items = source.filter((p) => p.section_id === sec.id);
+      if (items.length > 0) result.push({ title: sec.title, premium: sec.is_premium, products: items });
+    }
+    const unassigned = source.filter((p) => !p.section_id || !dbSections.find((s) => s.id === p.section_id));
+    if (unassigned.length > 0) result.push({ title: "Outros", premium: false, products: unassigned });
+    return result;
+  })();
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
