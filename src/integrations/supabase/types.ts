@@ -304,6 +304,7 @@ export type Database = {
           release_type: string
           release_value: string | null
           sales_page_url: string | null
+          section_id: string | null
           sort_order: number
           updated_at: string
           user_id: string
@@ -327,6 +328,7 @@ export type Database = {
           release_type?: string
           release_value?: string | null
           sales_page_url?: string | null
+          section_id?: string | null
           sort_order?: number
           updated_at?: string
           user_id: string
@@ -350,6 +352,7 @@ export type Database = {
           release_type?: string
           release_value?: string | null
           sales_page_url?: string | null
+          section_id?: string | null
           sort_order?: number
           updated_at?: string
           user_id?: string
@@ -360,6 +363,13 @@ export type Database = {
             columns: ["app_id"]
             isOneToOne: false
             referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
             referencedColumns: ["id"]
           },
         ]
@@ -422,6 +432,50 @@ export type Database = {
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sections: {
+        Row: {
+          app_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_premium: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_premium?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_premium?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sections_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
             referencedColumns: ["id"]
           },
         ]
