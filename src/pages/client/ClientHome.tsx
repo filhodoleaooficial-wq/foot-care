@@ -10,6 +10,14 @@ interface Product {
   name: string;
   description: string | null;
   cover_url: string | null;
+  section_id: string | null;
+}
+
+interface SectionRow {
+  id: string;
+  title: string;
+  sort_order: number;
+  is_premium: boolean;
 }
 
 interface Banner {
@@ -23,6 +31,7 @@ const ClientHome = () => {
   const { appId } = useParams();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
+  const [dbSections, setDbSections] = useState<SectionRow[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,12 +41,14 @@ const ClientHome = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [prodRes, bannerRes] = await Promise.all([
-        supabase.from("products").select("id, name, description, cover_url").eq("app_id", appId!).eq("is_published", true).order("sort_order"),
+      const [prodRes, bannerRes, secRes] = await Promise.all([
+        supabase.from("products").select("id, name, description, cover_url, section_id").eq("app_id", appId!).eq("is_published", true).order("sort_order"),
         supabase.from("banners").select("id, image_url, link_url").eq("app_id", appId!).eq("is_active", true).order("sort_order"),
+        supabase.from("sections").select("id, title, sort_order, is_premium").eq("app_id", appId!).eq("is_active", true).order("sort_order"),
       ]);
       setProducts(prodRes.data || []);
       setBanners(bannerRes.data || []);
+      setDbSections(secRes.data || []);
     };
     fetchData();
   }, [appId]);
