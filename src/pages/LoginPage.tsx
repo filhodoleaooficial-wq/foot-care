@@ -36,7 +36,7 @@ const LoginPage = () => {
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
-        navigate("/dashboard");
+        navigate("/admin/dashboard");
       }
     } catch (error: any) {
       toast({
