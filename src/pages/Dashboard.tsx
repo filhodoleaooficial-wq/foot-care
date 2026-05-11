@@ -94,7 +94,13 @@ const Dashboard = () => {
         window.open(data.url, "_blank");
       }
     } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({
+        title: "Não foi possível iniciar o pagamento",
+        description:
+          "Tivemos um problema ao abrir o checkout. Verifique sua conexão e tente novamente em instantes.",
+        variant: "destructive",
+      });
+      console.error("Checkout error:", error);
     } finally {
       setCheckoutLoading(false);
     }

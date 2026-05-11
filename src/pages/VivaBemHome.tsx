@@ -99,7 +99,10 @@ const VivaBemHome = () => {
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
-      toast.error("Erro ao iniciar pagamento: " + (err.message || "Tente novamente"));
+      toast.error(
+        "Não foi possível abrir o checkout. Tente novamente em instantes."
+      );
+      console.error("Checkout error:", err);
     } finally {
       setCheckoutLoading(false);
     }
