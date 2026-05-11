@@ -30,6 +30,8 @@ import ClientAppLayout from "./pages/client/ClientAppLayout";
 import ClientLogin from "./pages/client/ClientLogin";
 import ClientHome from "./pages/client/ClientHome";
 import ClientProduct from "./pages/client/ClientProduct";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCanceled from "./pages/PaymentCanceled";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,10 @@ const App = () => (
           <Routes>
             {/* Quiz (entry point) */}
             <Route path="/quiz" element={<QuizPage />} />
+
+            {/* Payment result pages */}
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-canceled" element={<PaymentCanceled />} />
 
             {/* Client login */}
             <Route path="/" element={<VivaBemLogin />} />
