@@ -264,6 +264,25 @@ const LessonModal = ({ open, onOpenChange, moduleId, userId, onLessonCreated, ex
             <Switch id="lesson-published" checked={isPublished} onCheckedChange={setIsPublished} />
           </div>
 
+          <div className="space-y-2 pt-2 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={() => setShowPreview((v) => !v)}
+            >
+              <Eye className="h-4 w-4" />
+              {showPreview ? "Ocultar pré-visualização" : "Pré-visualizar conteúdo"}
+            </Button>
+            {showPreview && (
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Pré-visualização</p>
+                {renderPreview()}
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-2">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>Fechar</Button>
             <Button variant="hero" className="flex-1" onClick={handleSave} disabled={saving}>
