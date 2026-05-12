@@ -40,8 +40,78 @@ const LessonModal = ({ open, onOpenChange, moduleId, userId, onLessonCreated, ex
   const [sortOrder, setSortOrder] = useState(existingLesson?.sort_order?.toString() || "0");
   const [isPublished, setIsPublished] = useState(existingLesson?.is_published ?? true);
   const [saving, setSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const toEmbedUrl = (url: string): string => {
+    if (!url) return "";
+    // YouTube
+    const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+    if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+    // Vimeo
+    const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+    return url;
+  };
+
+  const renderPreview = () => {
+    if (["video", "vturb", "iframe"].includes(contentType)) {
+      if (!contentUrl) return <p className="text-xs text-muted-foreground">Cole uma URL para visualizar.</p>;
+      return (
+        <div className="aspect-video w-full overflow-hidden rounded-md border bg-black">
+          <iframe
+            src={toEmbedUrl(contentUrl)}
+            className="h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      );
+    }
+    if (contentType === "pdf") {
+      if (!contentUrl) return <p className="text-xs text-muted-foreground">Envie um arquivo para visualizar.</p>;
+      return <iframe src={contentUrl} className="h-80 w-full rounded-md border bg-white" />;
+    }
+    if (contentType === "audio") {
+      if (!contentUrl) return <p className="text-xs text-muted-foreground">Envie um áudio para ouvir.</p>;
+      return <audio src={contentUrl} controls className="w-full" />;
+    }
+    if (contentType === "download") {
+      if (!contentUrl) return <p className="text-xs text-muted-foreground">Envie um arquivo.</p>;
+      return (
+        <a href={contentUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline break-all">
+          ⬇️ Baixar arquivo
+        </a>
+      );
+    }
+    if (contentType === "link") {
+      if (!contentUrl) return <p className="text-xs text-muted-foreground">Cole um link.</p>;
+      return (
+        <a href={contentUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline break-all">
+          {contentUrl} ↗
+        </a>
+      );
+    }
+    if (contentType === "html") {
+      if (!contentText) return <p className="text-xs text-muted-foreground">Cole o código HTML.</p>;
+      return (
+        <div
+          className="rounded-md border bg-background p-3 text-sm"
+          dangerouslySetInnerHTML={{ __html: contentText }}
+        />
+      );
+    }
+    if (contentType === "text") {
+      if (!contentText) return <p className="text-xs text-muted-foreground">Escreva o conteúdo.</p>;
+      return (
+        <div className="rounded-md border bg-background p-3 text-sm whitespace-pre-wrap">
+          {contentText}
+        </div>
+      );
+    }
+    return null;
+  };
 
   const uploadFile = async (file: File) => {
     const ext = file.name.split(".").pop();
