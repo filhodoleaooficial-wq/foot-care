@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen } from "lucide-react";
+import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen, LogOut } from "lucide-react";
+import { clearClientSession } from "@/lib/client-session";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppConfig } from "@/contexts/AppConfigContext";
 
