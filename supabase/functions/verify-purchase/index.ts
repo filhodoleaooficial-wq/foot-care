@@ -30,22 +30,22 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     const paid = session.payment_status === "paid";
-    const moduleId = session.metadata?.module_id;
+    const productId = session.metadata?.product_id;
     const clientId = session.metadata?.client_id;
 
-    if (paid && moduleId && clientId) {
-      await supabase.from("module_purchases").upsert(
+    if (paid && productId && clientId) {
+      await supabase.from("product_purchases").upsert(
         {
           client_id: clientId,
-          module_id: moduleId,
+          product_id: productId,
           status: "paid",
           stripe_session_id: sessionId,
         },
-        { onConflict: "client_id,module_id" }
+        { onConflict: "client_id,product_id" }
       );
     }
 
-    return new Response(JSON.stringify({ paid, moduleId, clientId }), {
+    return new Response(JSON.stringify({ paid, productId, clientId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
