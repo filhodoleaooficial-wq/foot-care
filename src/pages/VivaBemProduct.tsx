@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getContentUrl } from "@/lib/content-url";
+import { getClientSession } from "@/lib/client-session";
 
 interface Product {
   id: string;
