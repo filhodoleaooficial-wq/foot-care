@@ -235,29 +235,32 @@ const VivaBemHome = () => {
       {sections.length > 0 ? (
         sections.map((section) => (
           <CardSection key={section.title} title={section.title}>
-            {section.products.map((product) => (
-              <ContentCard
-                key={product.id}
-                title={product.name}
-                imageUrl={product.cover_url}
-                accentColor={accentColor}
-                locked={section.premium && !subscription.subscribed}
-                onClick={() => {
-                  if (section.premium && !subscription.subscribed) {
-                    toast("Conteúdo Premium 🔒", {
-                      description: "Este conteúdo é exclusivo para assinantes. Assine para desbloquear!",
-                      action: {
-                        label: checkoutLoading ? "Aguarde..." : "Assinar agora",
-                        onClick: () => handlePremiumCheckout(),
-                      },
-                      duration: 6000,
-                    });
-                  } else {
-                    navigate(`/produto/${product.id}`);
-                  }
-                }}
-              />
-            ))}
+            {section.products.map((product) => {
+              const isLocked = section.premium && !purchasedIds.has(product.id);
+              return (
+                <ContentCard
+                  key={product.id}
+                  title={product.name}
+                  imageUrl={product.cover_url}
+                  accentColor={accentColor}
+                  locked={isLocked}
+                  onClick={() => {
+                    if (isLocked) {
+                      toast("Conteúdo bloqueado 🔒", {
+                        description: "Libere este curso por R$ 27,90 (pagamento único).",
+                        action: {
+                          label: checkoutLoading ? "Aguarde..." : "Comprar agora",
+                          onClick: () => handleProductCheckout(product.id),
+                        },
+                        duration: 6000,
+                      });
+                    } else {
+                      navigate(`/produto/${product.id}`);
+                    }
+                  }}
+                />
+              );
+            })}
           </CardSection>
         ))
       ) : (
