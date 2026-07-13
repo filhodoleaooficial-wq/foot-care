@@ -51,34 +51,14 @@ const VivaBemLogin = () => {
 
     setLoading(true);
     try {
-      // Find existing client by email
-      const { data: existing } = await supabase
-        .from("app_clients")
-        .select("id, email, phone")
-        .eq("email", email)
-        .limit(1)
-        .maybeSingle();
+      const { data, error } = await supabase.functions.invoke("client-login", {
+        body: { email, phone },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (!data?.id) throw new Error("Não foi possível registrar o acesso.");
 
-      let clientId = existing?.id;
-
-      if (existing) {
-        // Update phone if changed
-        if (existing.phone !== phone) {
-          await supabase.from("app_clients").update({ phone }).eq("id", existing.id);
-        }
-      } else {
-        const { data: inserted, error } = await supabase
-          .from("app_clients")
-          .insert({ email, phone, age: 0, gender: "" })
-          .select("id")
-          .single();
-        if (error) throw error;
-        clientId = inserted.id;
-      }
-
-      if (!clientId) throw new Error("Não foi possível registrar o acesso.");
-
-      setClientSession({ id: clientId, email, phone });
+      setClientSession({ id: data.id, email, phone });
       toast({ title: `Bem-vindo ao ${app?.name || "App"}! 🎉` });
       navigate("/home");
     } catch (err: any) {
