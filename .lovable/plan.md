@@ -1,54 +1,58 @@
+## Objetivo
 
-## Plano: Implementar funcionalidades faltantes + Rebrand
+Transformar o app de um SaaS multi-tenant com assinatura para **um único app** com:
+- Login simples (e-mail + celular, sem autenticação real) → redireciona direto para a Home
+- Home igual para todos os usuários
+- Módulos **free** e módulos **pagos** (R$ 27,90 cada, pagamento único)
+- Após pagar, o módulo fica liberado só para aquele usuário
+- Admin (só você) para criar módulos, subir aulas (pdf/vídeo/texto/áudio), modelar o app (cores, logo) e enviar mensagens via Evolution
 
-### 1. Rebrand — "VivaBem Emagrecimento" → "PéSaúde"
-- **VivaBemLogin.tsx** → Atualizar textos ("Emagrecimento para mulheres" → "Saúde dos Pés"), ícone Heart → Footprints
-- **VivaBemHome.tsx** → Mudar header, seções ("Seus Treinos" → "Seus Cuidados", "Presentes" → "Dicas Gratuitas")
-- **VivaBemSidebar.tsx** → Mudar logo/nome para "PéSaúde", adicionar itens Loja e Blog
-- **index.css** → Ajustar cores se necessário (manter paleta rosa/verde/grafite existente)
+## O que já existe e será aproveitado
 
-### 2. Quiz antes do login (nova página)
-- Criar **`/quiz`** como rota inicial (antes do login)
-- Fluxo: `/` (landing com CTA) → `/quiz` → após completar → `/` (login/cadastro)
-- Quiz com 3-4 perguntas sobre saúde dos pés:
-  - "Qual seu principal problema?" (dor, calosidade, unha encravada, etc.)
-  - "Com que frequência sente desconforto?"
-  - "Já consultou um podólogo?"
-- Visual com cards de opção, progresso, animações
-- Resultado salvo em localStorage para uso futuro
+- ✅ Menu lateral completo: Início, Comunidade, Feed, Loja, Blog, Módulos salvos, Instalar App, Pesquisar
+- ✅ Home com seções e cards de módulos (free/premium), com cadeado nos bloqueados
+- ✅ Admin: gestão de apps, produtos/módulos, aulas (com preview ao vivo), seções, botões de habilitar/desabilitar (`is_published`, `is_active`)
+- ✅ Integração Evolution (WhatsApp) para enviar mensagens
+- ✅ Página "Instalar App" (PWA)
+- ✅ Modelagem visual do app (cores, logo, background) no admin
 
-### 3. Loja de Produtos (nova página)
-- Criar **`/loja`** no menu lateral
-- Grid de produtos com imagem, nome, preço e botão "Comprar" que abre link externo (`sales_page_url`)
-- Busca produtos do banco com `offer_type !== 'free'` e `sales_page_url` preenchido
-- Se não houver `sales_page_url`, mostra botão desabilitado
+## Mudanças necessárias
 
-### 4. Blog (nova página)
-- Criar **`/blog`** no menu lateral
-- Exibe módulos com `content_type = 'text'` como artigos de blog
-- Card com título, descrição, data, clicável para expandir o conteúdo HTML
+### 1. Login simples sem autenticação
+- Nova tela de entrada: campos **e-mail** e **celular**, botão "Entrar"
+- Ao entrar: salvar/atualizar registro na tabela `app_clients` (e-mail + telefone) e guardar o id do cliente no `localStorage`
+- Redirecionar para `/home` (mesma home para todos)
+- Trocar o `ClientProtectedRoute` para checar apenas se existe cliente no `localStorage` (sem sessão do Supabase)
 
-### Rotas atualizadas no App.tsx
-```
-/ → Landing simples com CTA para quiz
-/quiz → Página do quiz
-/login → Login/Cadastro (atual VivaBemLogin adaptado)
-/home → Home (protegida)
-/loja → Loja de produtos
-/blog → Blog
-```
+### 2. Modelo de pagamento: assinatura → compra avulsa por módulo
+- Nova tabela `module_purchases` (cliente, módulo, status, valor) para registrar quem comprou o quê
+- Edge function `create-checkout`: criar sessão Stripe **`mode: "payment"`** (pagamento único de R$ 27,90) em vez de `subscription`, referenciando o módulo comprado
+- Edge function `verify-purchase` (nova): confirmar pagamento e gravar a compra liberada para aquele cliente
+- Remover a lógica de assinatura (`check-subscription`, `STRIPE_PRICES`, `customer-portal`) do fluxo do cliente
+- Home/Módulo: desbloquear conteúdo verificando `module_purchases` daquele cliente em vez de `subscription.subscribed`
 
-### Arquivos alterados
-| Arquivo | Ação |
-|---|---|
-| `src/pages/QuizPage.tsx` | **Criar** — Quiz de saúde dos pés |
-| `src/pages/StorePage.tsx` | **Criar** — Loja com links externos |
-| `src/pages/BlogPage.tsx` | **Criar** — Blog com artigos |
-| `src/App.tsx` | Adicionar rotas /quiz, /loja, /blog |
-| `src/components/VivaBemSidebar.tsx` | Adicionar Loja e Blog, rebrand |
-| `src/pages/VivaBemLogin.tsx` | Rebrand textos e ícone |
-| `src/pages/VivaBemHome.tsx` | Rebrand seções e textos |
-| `index.html` | Atualizar título da página |
+### 3. Cada módulo pago com seu próprio espaço
+- Página de curso do módulo já existe (`VivaBemProduct`/aulas); ajustar para liberar só se for free ou comprado
 
-### Sem migração SQL necessária
-Usa tabelas existentes (`products`, `modules`). Quiz salva em localStorage.
+### 4. Admin
+- Adicionar campo de **preço/flag pago** por módulo (já existe `price` e `offer_type` em products)
+- Manter Evolution para mensagens aos clientes do banco
+- Manter modelagem visual
+
+## Detalhes técnicos
+
+- **Stripe**: continuar com a integração Stripe já configurada, mudando `create-checkout` para `mode: "payment"` com `line_items` de preço fixo (R$ 27,90) ou price avulso por módulo. Resolve também o erro atual de "price test/live" pois deixaremos de depender do price de assinatura fixo.
+- **Sem auth real**: `app_clients` já tem `email`, adicionar coluna `phone`. RLS terá que permitir insert/select público (anon) já que não há login autenticado — dados não sensíveis.
+- **Liberação**: `module_purchases` com `client_id`, `module_id`, `status`, verificada no carregamento da Home e da página do módulo.
+
+## Ordem de execução sugerida
+
+1. Migration: adicionar `phone` em `app_clients`; criar `module_purchases` + grants/RLS
+2. Login simples + guarda de rota por localStorage
+3. Ajustar `create-checkout` para pagamento único + `verify-purchase`
+4. Ajustar Home e página do módulo para liberar por compra
+5. Ajustes finais no admin (preço por módulo)
+
+## Pergunta antes de começar
+
+Antes de finalizar preciso confirmar 2 pontos que mudam bastante a implementação (na próxima mensagem).

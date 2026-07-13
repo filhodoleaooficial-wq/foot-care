@@ -21,6 +21,7 @@ export type Database = {
           email: string
           gender: string
           id: string
+          phone: string | null
           points: number
           updated_at: string
           user_id: string | null
@@ -31,6 +32,7 @@ export type Database = {
           email: string
           gender?: string
           id?: string
+          phone?: string | null
           points?: number
           updated_at?: string
           user_id?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           email?: string
           gender?: string
           id?: string
+          phone?: string | null
           points?: number
           updated_at?: string
           user_id?: string | null
@@ -212,6 +215,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_purchases: {
+        Row: {
+          amount: number | null
+          client_id: string
+          created_at: string
+          id: string
+          module_id: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          client_id: string
+          created_at?: string
+          id?: string
+          module_id: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          module_id?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_purchases_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "app_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_purchases_module_id_fkey"
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "modules"
