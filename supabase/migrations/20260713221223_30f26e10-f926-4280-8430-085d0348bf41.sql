@@ -1,0 +1,1 @@
+REVOKE SELECT, INSERT, UPDATE ON public.app_clients FROM anon;
