@@ -107,6 +107,20 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
         })}
       </nav>
 
+      {/* Logout */}
+      <button
+        onClick={() => {
+          clearClientSession();
+          navigate("/");
+        }}
+        className="mx-2 mb-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white transition-colors"
+      >
+        <LogOut className="h-5 w-5 flex-shrink-0" />
+        {!collapsed && <span className="whitespace-nowrap">Sair</span>}
+      </button>
+
+
+
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
