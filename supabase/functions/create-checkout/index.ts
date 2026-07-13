@@ -7,44 +7,74 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const DEFAULT_PRICE_CENTS = 2790; // R$ 27,90
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
+  const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
   try {
-    const { priceId } = await req.json();
-    if (!priceId) throw new Error("priceId is required");
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated");
+    const body = await req.json();
+    const productId = String(body?.productId ?? "");
+    const clientId = String(body?.clientId ?? "");
+    if (!productId || !clientId) throw new Error("productId and clientId are required");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
+    const { data: product, error: prodErr } = await supabase
+      .from("products")
+      .select("id, name, price")
+      .eq("id", productId)
+      .single();
+    if (prodErr || !product) throw new Error("Produto não encontrado");
 
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    }
+    const { data: client } = await supabase
+      .from("app_clients")
+      .select("id, email")
+      .eq("id", clientId)
+      .single();
+
+    const amountCents = product.price ? Math.round(Number(product.price) * 100) : DEFAULT_PRICE_CENTS;
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const origin = req.headers.get("origin") || "";
 
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: "subscription",
-      success_url: `${req.headers.get("origin")}/payment-success`,
-      cancel_url: `${req.headers.get("origin")}/payment-canceled`,
+      customer_email: client?.email || undefined,
+      line_items: [
+        {
+          price_data: {
+            currency: "brl",
+            product_data: { name: product.name },
+            unit_amount: amountCents,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/payment-canceled`,
+      metadata: { product_id: productId, client_id: clientId },
     });
+
+    await supabase.from("product_purchases").upsert(
+      {
+        client_id: clientId,
+        product_id: productId,
+        status: "pending",
+        amount: amountCents / 100,
+        stripe_session_id: session.id,
+      },
+      { onConflict: "client_id,product_id" }
+    );
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

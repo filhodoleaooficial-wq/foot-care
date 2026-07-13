@@ -21,6 +21,7 @@ export type Database = {
           email: string
           gender: string
           id: string
+          phone: string | null
           points: number
           updated_at: string
           user_id: string | null
@@ -31,6 +32,7 @@ export type Database = {
           email: string
           gender?: string
           id?: string
+          phone?: string | null
           points?: number
           updated_at?: string
           user_id?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           email?: string
           gender?: string
           id?: string
+          phone?: string | null
           points?: number
           updated_at?: string
           user_id?: string | null
@@ -277,6 +280,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "modules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_purchases: {
+        Row: {
+          amount: number | null
+          client_id: string
+          created_at: string
+          id: string
+          product_id: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          client_id: string
+          created_at?: string
+          id?: string
+          product_id: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_purchases_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "app_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_purchases_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"

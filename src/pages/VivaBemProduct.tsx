@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getContentUrl } from "@/lib/content-url";
+import { getClientSession } from "@/lib/client-session";
 
 interface Product {
   id: string;
@@ -109,6 +110,40 @@ const VivaBemProduct = () => {
     if (!productId) return;
     const fetch = async () => {
       setLoading(true);
+
+      // Access guard: if product is in a premium section, require a paid purchase
+      const { data: prod } = await supabase
+        .from("products")
+        .select("id, name, description, cover_url, section_id")
+        .eq("id", productId)
+        .single();
+
+      if (prod?.section_id) {
+        const { data: sec } = await supabase
+          .from("sections")
+          .select("is_premium")
+          .eq("id", prod.section_id)
+          .maybeSingle();
+        if (sec?.is_premium) {
+          const client = getClientSession();
+          let allowed = false;
+          if (client) {
+            const { data: purch } = await supabase
+              .from("product_purchases")
+              .select("id")
+              .eq("client_id", client.id)
+              .eq("product_id", productId)
+              .eq("status", "paid")
+              .maybeSingle();
+            allowed = !!purch;
+          }
+          if (!allowed) {
+            navigate("/home");
+            return;
+          }
+        }
+      }
+
       const [pRes, mRes] = await Promise.all([
         supabase.from("products").select("id, name, description, cover_url").eq("id", productId).single(),
         supabase.from("modules").select("*").eq("product_id", productId).eq("is_published", true).order("sort_order"),
@@ -131,6 +166,7 @@ const VivaBemProduct = () => {
     };
     fetch();
   }, [productId]);
+
 
   const lessonsForModule = (moduleId: string) => lessons.filter((l) => l.module_id === moduleId);
 

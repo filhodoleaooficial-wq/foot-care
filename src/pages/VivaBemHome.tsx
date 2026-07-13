@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Lock, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, STRIPE_PRICES } from "@/contexts/AuthContext";
 import { useAppConfig } from "@/contexts/AppConfigContext";
+import { getClientSession } from "@/lib/client-session";
 import { toast } from "sonner";
 
 interface Product {
@@ -84,24 +84,28 @@ interface Section {
 
 const VivaBemHome = () => {
   const navigate = useNavigate();
-  const { subscription } = useAuth();
   const { app, loading: appLoading } = useAppConfig();
   const [products, setProducts] = useState<Product[]>([]);
   const [dbSections, setDbSections] = useState<SectionRow[]>([]);
+  const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
-  const handlePremiumCheckout = async () => {
+  const handleProductCheckout = async (productId: string) => {
+    const client = getClientSession();
+    if (!client) {
+      navigate("/");
+      return;
+    }
     setCheckoutLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: STRIPE_PRICES.monthly },
+        body: { productId, clientId: client.id },
       });
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast.error(
-        "Não foi possível abrir o checkout. Tente novamente em instantes."
-      );
+      toast.error("Não foi possível abrir o checkout. Tente novamente em instantes.");
       console.error("Checkout error:", err);
     } finally {
       setCheckoutLoading(false);
@@ -111,7 +115,8 @@ const VivaBemHome = () => {
   useEffect(() => {
     if (!app) return;
     const fetchData = async () => {
-      const [prodRes, secRes] = await Promise.all([
+      const client = getClientSession();
+      const [prodRes, secRes, purchRes] = await Promise.all([
         supabase
           .from("products")
           .select("id, name, description, cover_url, offer_type, section_id")
@@ -124,12 +129,21 @@ const VivaBemHome = () => {
           .eq("app_id", app.id)
           .eq("is_active", true)
           .order("sort_order"),
+        client
+          ? supabase
+              .from("product_purchases")
+              .select("product_id")
+              .eq("client_id", client.id)
+              .eq("status", "paid")
+          : Promise.resolve({ data: [] as { product_id: string }[] }),
       ]);
       setProducts(prodRes.data || []);
       setDbSections(secRes.data || []);
+      setPurchasedIds(new Set((purchRes.data || []).map((p: any) => p.product_id)));
     };
     fetchData();
   }, [app]);
+
 
   // Group products into sections from DB
   const sections: Section[] = (() => {
@@ -221,29 +235,32 @@ const VivaBemHome = () => {
       {sections.length > 0 ? (
         sections.map((section) => (
           <CardSection key={section.title} title={section.title}>
-            {section.products.map((product) => (
-              <ContentCard
-                key={product.id}
-                title={product.name}
-                imageUrl={product.cover_url}
-                accentColor={accentColor}
-                locked={section.premium && !subscription.subscribed}
-                onClick={() => {
-                  if (section.premium && !subscription.subscribed) {
-                    toast("Conteúdo Premium 🔒", {
-                      description: "Este conteúdo é exclusivo para assinantes. Assine para desbloquear!",
-                      action: {
-                        label: checkoutLoading ? "Aguarde..." : "Assinar agora",
-                        onClick: () => handlePremiumCheckout(),
-                      },
-                      duration: 6000,
-                    });
-                  } else {
-                    navigate(`/produto/${product.id}`);
-                  }
-                }}
-              />
-            ))}
+            {section.products.map((product) => {
+              const isLocked = section.premium && !purchasedIds.has(product.id);
+              return (
+                <ContentCard
+                  key={product.id}
+                  title={product.name}
+                  imageUrl={product.cover_url}
+                  accentColor={accentColor}
+                  locked={isLocked}
+                  onClick={() => {
+                    if (isLocked) {
+                      toast("Conteúdo bloqueado 🔒", {
+                        description: "Libere este curso por R$ 27,90 (pagamento único).",
+                        action: {
+                          label: checkoutLoading ? "Aguarde..." : "Comprar agora",
+                          onClick: () => handleProductCheckout(product.id),
+                        },
+                        duration: 6000,
+                      });
+                    } else {
+                      navigate(`/produto/${product.id}`);
+                    }
+                  }}
+                />
+              );
+            })}
           </CardSection>
         ))
       ) : (

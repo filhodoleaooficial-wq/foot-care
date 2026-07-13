@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen } from "lucide-react";
+import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen, LogOut } from "lucide-react";
+import { clearClientSession } from "@/lib/client-session";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppConfig } from "@/contexts/AppConfigContext";
 
@@ -105,6 +106,20 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
           );
         })}
       </nav>
+
+      {/* Logout */}
+      <button
+        onClick={() => {
+          clearClientSession();
+          navigate("/");
+        }}
+        className="mx-2 mb-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white transition-colors"
+      >
+        <LogOut className="h-5 w-5 flex-shrink-0" />
+        {!collapsed && <span className="whitespace-nowrap">Sair</span>}
+      </button>
+
+
 
       {/* Collapse toggle */}
       <button
