@@ -216,10 +216,10 @@ const BlogArticleModal = ({ open, onOpenChange, appId, userId, existing, onSaved
       };
 
       if (existing) {
-        const { error } = await supabase.from("modules").update(payload).eq("id", existing.id);
+        const { error } = await supabase.from("modules").update(payload as any).eq("id", existing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("modules").insert(payload);
+        const { error } = await supabase.from("modules").insert(payload as any);
         if (error) throw error;
       }
       toast({ title: existing ? "Artigo atualizado!" : "Artigo criado!" });

@@ -13,7 +13,6 @@ interface Post {
   content: string;
   created_at: string;
   user_id: string | null;
-  client_email: string;
 }
 
 const CommunityManagement = () => {
@@ -35,7 +34,7 @@ const CommunityManagement = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("community_posts")
-      .select("id, content, created_at, user_id, client_email")
+      .select("id, content, created_at, user_id")
       .order("created_at", { ascending: false });
     if (error) console.error(error);
     else setPosts(data || []);
@@ -59,7 +58,7 @@ const CommunityManagement = () => {
     setSending(true);
     const { error } = await supabase
       .from("community_posts")
-      .insert({ client_email: user.email || "", content: newPost.trim(), user_id: user.id });
+      .insert({ content: newPost.trim(), user_id: user.id });
     if (error) {
       toast({ title: "Erro ao publicar", description: error.message, variant: "destructive" });
     } else {
@@ -127,7 +126,7 @@ const CommunityManagement = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-foreground">{post.client_email || "Membro"}</p>
+                        <p className="text-sm font-semibold text-foreground">Membro</p>
                         {post.user_id && (
                           <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">Admin</span>
                         )}

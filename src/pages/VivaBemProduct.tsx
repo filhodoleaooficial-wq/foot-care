@@ -128,14 +128,11 @@ const VivaBemProduct = () => {
           const client = getClientSession();
           let allowed = false;
           if (client) {
-            const { data: purch } = await supabase
-              .from("product_purchases")
-              .select("id")
-              .eq("client_id", client.id)
-              .eq("product_id", productId)
-              .eq("status", "paid")
-              .maybeSingle();
-            allowed = !!purch;
+            const { data } = await supabase.functions.invoke("list-purchases", {
+              body: { clientId: client.id, productId },
+            });
+            const ids: string[] = (data as any)?.productIds ?? [];
+            allowed = ids.includes(productId);
           }
           if (!allowed) {
             navigate("/home");
