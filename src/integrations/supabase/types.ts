@@ -147,21 +147,18 @@ export type Database = {
       }
       community_posts: {
         Row: {
-          client_email: string
           content: string
           created_at: string
           id: string
           user_id: string | null
         }
         Insert: {
-          client_email: string
           content: string
           created_at?: string
           id?: string
           user_id?: string | null
         }
         Update: {
-          client_email?: string
           content?: string
           created_at?: string
           id?: string
