@@ -131,16 +131,13 @@ const VivaBemHome = () => {
           .eq("is_active", true)
           .order("sort_order"),
         client
-          ? supabase
-              .from("product_purchases")
-              .select("product_id")
-              .eq("client_id", client.id)
-              .eq("status", "paid")
-          : Promise.resolve({ data: [] as { product_id: string }[] }),
+          ? supabase.functions.invoke("list-purchases", { body: { clientId: client.id } })
+          : Promise.resolve({ data: { productIds: [] as string[] } }),
       ]);
       setProducts(prodRes.data || []);
       setDbSections(secRes.data || []);
-      setPurchasedIds(new Set((purchRes.data || []).map((p: any) => p.product_id)));
+      const ids: string[] = (purchRes as any)?.data?.productIds ?? [];
+      setPurchasedIds(new Set(ids));
     };
     fetchData();
   }, [app]);
