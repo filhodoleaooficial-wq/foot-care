@@ -126,7 +126,7 @@ const CommunityManagement = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-foreground">{post.client_email || "Membro"}</p>
+                        <p className="text-sm font-semibold text-foreground">Membro</p>
                         {post.user_id && (
                           <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">Admin</span>
                         )}
