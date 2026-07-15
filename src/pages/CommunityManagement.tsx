@@ -13,7 +13,6 @@ interface Post {
   content: string;
   created_at: string;
   user_id: string | null;
-  client_email: string;
 }
 
 const CommunityManagement = () => {
@@ -35,7 +34,7 @@ const CommunityManagement = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("community_posts")
-      .select("id, content, created_at, user_id, client_email")
+      .select("id, content, created_at, user_id")
       .order("created_at", { ascending: false });
     if (error) console.error(error);
     else setPosts(data || []);
@@ -59,7 +58,7 @@ const CommunityManagement = () => {
     setSending(true);
     const { error } = await supabase
       .from("community_posts")
-      .insert({ client_email: user.email || "", content: newPost.trim(), user_id: user.id });
+      .insert({ content: newPost.trim(), user_id: user.id });
     if (error) {
       toast({ title: "Erro ao publicar", description: error.message, variant: "destructive" });
     } else {
