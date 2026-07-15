@@ -20,18 +20,19 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const email = String(body?.email ?? "").trim().toLowerCase();
-    const phone = String(body?.phone ?? "").trim();
+    const userId = String(body?.userId ?? "").trim();
 
-    if (!email || !email.includes("@") || !phone) {
-      return new Response(JSON.stringify({ error: "E-mail e celular são obrigatórios." }), {
+    if (!email || !email.includes("@")) {
+      return new Response(JSON.stringify({ error: "E-mail é obrigatório." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Try to find existing client by email
     const { data: existing } = await supabase
       .from("app_clients")
-      .select("id, phone")
+      .select("id, email")
       .eq("email", email)
       .limit(1)
       .maybeSingle();
@@ -39,20 +40,22 @@ serve(async (req) => {
     let clientId = existing?.id as string | undefined;
 
     if (existing) {
-      if (existing.phone !== phone) {
-        await supabase.from("app_clients").update({ phone }).eq("id", existing.id);
+      // Update user_id if not set
+      if (userId) {
+        await supabase.from("app_clients").update({ user_id: userId }).eq("id", existing.id);
       }
     } else {
+      // Create new client
       const { data: inserted, error } = await supabase
         .from("app_clients")
-        .insert({ email, phone, age: 0, gender: "" })
+        .insert({ email, phone: "", age: 0, gender: "", user_id: userId || null })
         .select("id")
         .single();
       if (error) throw error;
       clientId = inserted.id;
     }
 
-    return new Response(JSON.stringify({ id: clientId, email, phone }), {
+    return new Response(JSON.stringify({ id: clientId, email }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

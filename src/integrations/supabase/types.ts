@@ -104,6 +104,33 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_settings: {
+        Row: {
+          id: string
+          integration_name: string
+          credentials: Json
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          integration_name: string
+          credentials?: Json
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          integration_name?: string
+          credentials?: Json
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           app_id: string

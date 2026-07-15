@@ -118,8 +118,8 @@ const Dashboard = () => {
             { icon: BookOpen, label: "Comunidade", href: "/admin/community" },
             { icon: MessageSquare, label: "WhatsApp", href: "/admin/whatsapp" },
             { icon: BarChart3, label: "Vendas", href: "/admin/dashboard" },
-            { icon: Link2, label: "Integrações", href: "/admin/dashboard" },
-            { icon: Users, label: "Meus Clientes", href: "/admin/dashboard" },
+            { icon: Link2, label: "Integrações", href: "/admin/integrations" },
+            { icon: Users, label: "Meus Clientes", href: "/admin/clients" },
             { icon: HelpCircle, label: "Suporte", href: "/admin/dashboard" },
             { icon: Settings, label: "Configurações", href: "/admin/dashboard" },
           ].map((item) => (

@@ -21,6 +21,8 @@ import SectionsManagement from "./pages/SectionsManagement";
 import WhatsAppPage from "./pages/WhatsAppPage";
 import BlogManagement from "./pages/BlogManagement";
 import CommunityManagement from "./pages/CommunityManagement";
+import IntegrationsPage from "./pages/IntegrationsPage";
+import ClientsPage from "./pages/ClientsPage";
 import CommunityPage from "./pages/CommunityPage";
 import FeedPage from "./pages/FeedPage";
 import SavedModulesPage from "./pages/SavedModulesPage";
@@ -86,6 +88,8 @@ const App = () => (
             <Route path="/admin/whatsapp" element={<ProtectedRoute><WhatsAppPage /></ProtectedRoute>} />
             <Route path="/admin/blog" element={<ProtectedRoute><BlogManagement /></ProtectedRoute>} />
             <Route path="/admin/community" element={<ProtectedRoute><CommunityManagement /></ProtectedRoute>} />
+            <Route path="/admin/integrations" element={<ProtectedRoute><IntegrationsPage /></ProtectedRoute>} />
+            <Route path="/admin/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

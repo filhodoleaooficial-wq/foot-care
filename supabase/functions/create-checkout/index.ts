@@ -9,6 +9,23 @@ const corsHeaders = {
 
 const DEFAULT_PRICE_CENTS = 2790; // R$ 27,90
 
+async function getStripeKey(supabase: ReturnType<typeof createClient>): Promise<string> {
+  const { data } = await supabase
+    .from("integration_settings")
+    .select("credentials, is_active")
+    .eq("integration_name", "stripe")
+    .single();
+
+  if (data?.is_active && data.credentials?.stripe_secret_key) {
+    return data.credentials.stripe_secret_key;
+  }
+
+  const envKey = Deno.env.get("STRIPE_SECRET_KEY");
+  if (envKey) return envKey;
+
+  throw new Error("Chave secreta do Stripe não configurada. Acesse Integrações no painel para configurar.");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -21,8 +38,7 @@ serve(async (req) => {
   );
 
   try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    const stripeKey = await getStripeKey(supabase);
 
     const body = await req.json();
     const productId = String(body?.productId ?? "");

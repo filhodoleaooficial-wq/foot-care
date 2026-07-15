@@ -1,29 +1,53 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+async function getWhatsAppConfig(supabase: ReturnType<typeof createClient>) {
+  const { data } = await supabase
+    .from("integration_settings")
+    .select("credentials, is_active")
+    .eq("integration_name", "whatsapp")
+    .single();
+
+  if (data?.is_active && data.credentials) {
+    return {
+      apiUrl: data.credentials.evolution_api_url || "",
+      apiKey: data.credentials.evolution_api_key || "",
+      instanceName: data.credentials.evolution_instance_name || "",
+    };
+  }
+
+  return {
+    apiUrl: Deno.env.get("EVOLUTION_API_URL") || "",
+    apiKey: Deno.env.get("EVOLUTION_API_KEY") || "",
+    instanceName: Deno.env.get("EVOLUTION_INSTANCE_NAME") || "",
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
   try {
-    const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL');
-    if (!EVOLUTION_API_URL) throw new Error('EVOLUTION_API_URL is not configured');
-
-    const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY');
-    if (!EVOLUTION_API_KEY) throw new Error('EVOLUTION_API_KEY is not configured');
-
-    const EVOLUTION_INSTANCE_NAME = Deno.env.get('EVOLUTION_INSTANCE_NAME');
-    if (!EVOLUTION_INSTANCE_NAME) throw new Error('EVOLUTION_INSTANCE_NAME is not configured');
+    const config = await getWhatsAppConfig(supabase);
+    if (!config.apiUrl) throw new Error('EVOLUTION_API_URL is not configured. Acesse Integrações no painel para configurar.');
+    if (!config.apiKey) throw new Error('EVOLUTION_API_KEY is not configured. Acesse Integrações no painel para configurar.');
+    if (!config.instanceName) throw new Error('EVOLUTION_INSTANCE_NAME is not configured. Acesse Integrações no painel para configurar.');
 
     const { action, number, text } = await req.json();
 
-    // Normalize base URL (remove trailing slash)
-    const baseUrl = EVOLUTION_API_URL.replace(/\/+$/, '');
+    const baseUrl = config.apiUrl.replace(/\/+$/, '');
 
     if (action === 'send-text') {
       if (!number || !text) {
@@ -33,16 +57,15 @@ serve(async (req) => {
         });
       }
 
-      // Clean phone number (remove +, spaces, dashes)
       const cleanNumber = number.replace(/[\s\-\+\(\)]/g, '');
 
       const response = await fetch(
-        `${baseUrl}/message/sendText/${EVOLUTION_INSTANCE_NAME}`,
+        `${baseUrl}/message/sendText/${config.instanceName}`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': EVOLUTION_API_KEY,
+            'apikey': config.apiKey,
           },
           body: JSON.stringify({
             number: cleanNumber,
@@ -65,10 +88,10 @@ serve(async (req) => {
 
     if (action === 'check-connection') {
       const response = await fetch(
-        `${baseUrl}/instance/connectionState/${EVOLUTION_INSTANCE_NAME}`,
+        `${baseUrl}/instance/connectionState/${config.instanceName}`,
         {
           method: 'GET',
-          headers: { 'apikey': EVOLUTION_API_KEY },
+          headers: { 'apikey': config.apiKey },
         }
       );
 

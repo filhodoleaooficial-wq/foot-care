@@ -111,33 +111,44 @@ const VivaBemProduct = () => {
     const fetch = async () => {
       setLoading(true);
 
-      // Access guard: if product is in a premium section, require a paid purchase
+      // Access guard: if product has price > 0 or is in a premium section, require a paid purchase
       const { data: prod } = await supabase
         .from("products")
-        .select("id, name, description, cover_url, section_id")
+        .select("id, name, description, cover_url, section_id, price")
         .eq("id", productId)
         .single();
 
+      const needsPayment = (prod?.price != null && prod.price > 0) || (() => {
+        if (!prod?.section_id) return false;
+        return false; // will check below
+      })();
+
+      let isPremiumSection = false;
       if (prod?.section_id) {
         const { data: sec } = await supabase
           .from("sections")
           .select("is_premium")
           .eq("id", prod.section_id)
           .maybeSingle();
-        if (sec?.is_premium) {
-          const client = getClientSession();
-          let allowed = false;
-          if (client) {
-            const { data } = await supabase.functions.invoke("list-purchases", {
-              body: { clientId: client.id, productId },
-            });
-            const ids: string[] = (data as any)?.productIds ?? [];
-            allowed = ids.includes(productId);
-          }
-          if (!allowed) {
-            navigate("/home");
-            return;
-          }
+        isPremiumSection = !!sec?.is_premium;
+      }
+
+      if (needsPayment || isPremiumSection) {
+        const client = getClientSession();
+        let allowed = false;
+        if (client) {
+          const { data: purch } = await supabase
+            .from("product_purchases")
+            .select("id")
+            .eq("client_id", client.id)
+            .eq("product_id", productId)
+            .eq("status", "paid")
+            .maybeSingle();
+          allowed = !!purch;
+        }
+        if (!allowed) {
+          navigate("/home");
+          return;
         }
       }
 
