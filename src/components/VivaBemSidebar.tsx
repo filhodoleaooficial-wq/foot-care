@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen, LogOut } from "lucide-react";
 import { clearClientSession } from "@/lib/client-session";
-import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppConfig } from "@/contexts/AppConfigContext";
 
@@ -112,7 +111,6 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
       <button
         onClick={() => {
           clearClientSession();
-          supabase.auth.signOut();
           navigate("/login");
         }}
         className="mx-2 mb-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white transition-colors"
