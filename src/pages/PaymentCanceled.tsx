@@ -26,7 +26,7 @@ const PaymentCanceled = () => {
             <Link to="/home">Tentar novamente</Link>
           </Button>
           <Button asChild variant="outline" className="w-full">
-            <Link to="/">Voltar ao início</Link>
+            <Link to="/login">Voltar ao início</Link>
           </Button>
         </div>
       </motion.div>

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, CreditCard, Crown, Copy, Check, MessageSquare, Share2, Layers } from "lucide-react";
+import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, Copy, Check, MessageSquare, Share2, Layers, FileText, BookOpen } from "lucide-react";
 import DeployDialog from "@/components/DeployDialog";
-import { useAuth, STRIPE_PRICES } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import logoImg from "@/assets/logo-pesaude.png";
@@ -26,30 +26,16 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [apps, setApps] = useState<App[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [copiedAppId, setCopiedAppId] = useState<string | null>(null);
   const [deployApp, setDeployApp] = useState<App | null>(null);
   const [sidebarCounts, setSidebarCounts] = useState<SidebarCounts>({ apps: 0, products: 0 });
-  const { user, signOut, subscription, checkSubscription } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (searchParams.get("checkout") === "success") {
-      toast({ title: "Assinatura ativada!", description: "Seu plano Pro está ativo." });
-      checkSubscription();
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (subscription.subscribed) {
-      fetchApps();
-    } else {
-      setLoadingApps(false);
-    }
-  }, [subscription.subscribed]);
+    fetchApps();
+  }, []);
 
   const fetchApps = async () => {
     const { data, error } = await supabase
@@ -79,42 +65,6 @@ const Dashboard = () => {
     } else {
       setApps((prev) => prev.filter((a) => a.id !== id));
       toast({ title: "App excluído" });
-    }
-  };
-
-  const handleCheckout = async () => {
-    setCheckoutLoading(true);
-    try {
-      const priceId = billingPeriod === "monthly" ? STRIPE_PRICES.monthly : STRIPE_PRICES.yearly;
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Não foi possível iniciar o pagamento",
-        description:
-          "Tivemos um problema ao abrir o checkout. Verifique sua conexão e tente novamente em instantes.",
-        variant: "destructive",
-      });
-      console.error("Checkout error:", error);
-    } finally {
-      setCheckoutLoading(false);
-    }
-  };
-
-  const handleManageSubscription = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
-    } catch (error: any) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
     }
   };
 
@@ -162,14 +112,16 @@ const Dashboard = () => {
         </div>
         <nav className="mt-4 space-y-1 px-3">
           {[
-            { icon: LayoutDashboard, label: "Meus Apps", href: "/dashboard", count: sidebarCounts.apps },
-            { icon: ShoppingBag, label: "Produtos", href: "/dashboard", count: sidebarCounts.products },
-            { icon: MessageSquare, label: "WhatsApp", href: "/whatsapp" },
-            { icon: BarChart3, label: "Vendas", href: "/dashboard" },
-            { icon: Link2, label: "Integrações", href: "/dashboard" },
-            { icon: Users, label: "Meus Clientes", href: "/dashboard" },
-            { icon: HelpCircle, label: "Suporte", href: "/dashboard" },
-            { icon: Settings, label: "Configurações", href: "/dashboard" },
+            { icon: LayoutDashboard, label: "Meus Apps", href: "/admin/dashboard", count: sidebarCounts.apps },
+            { icon: ShoppingBag, label: "Produtos", href: "/admin/dashboard", count: sidebarCounts.products },
+            { icon: FileText, label: "Blog", href: "/admin/blog" },
+            { icon: BookOpen, label: "Comunidade", href: "/admin/community" },
+            { icon: MessageSquare, label: "WhatsApp", href: "/admin/whatsapp" },
+            { icon: BarChart3, label: "Vendas", href: "/admin/dashboard" },
+            { icon: Link2, label: "Integrações", href: "/admin/dashboard" },
+            { icon: Users, label: "Meus Clientes", href: "/admin/dashboard" },
+            { icon: HelpCircle, label: "Suporte", href: "/admin/dashboard" },
+            { icon: Settings, label: "Configurações", href: "/admin/dashboard" },
           ].map((item) => (
             <Link
               key={item.label}
@@ -188,24 +140,6 @@ const Dashboard = () => {
           ))}
         </nav>
 
-        {/* Subscription status in sidebar */}
-        <div className="absolute bottom-16 left-0 right-0 px-3">
-          {subscription.subscribed ? (
-            <div className="rounded-lg border border-primary/30 bg-accent/50 p-3 text-xs">
-              <div className="flex items-center gap-1.5 font-bold text-primary">
-                <Crown className="h-3.5 w-3.5" /> Plano Pro
-              </div>
-              <button onClick={handleManageSubscription} className="mt-2 flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
-                <CreditCard className="h-3 w-3" /> Gerenciar assinatura
-              </button>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs dark:border-amber-800 dark:bg-amber-950">
-              <p className="font-semibold text-amber-700 dark:text-amber-300">Sem assinatura ativa</p>
-            </div>
-          )}
-        </div>
-
         <div className="absolute bottom-4 left-0 right-0 px-3">
           <div className="rounded-lg border bg-background p-3 text-xs">
             <p className="font-medium text-foreground truncate">{user?.email}</p>
@@ -218,65 +152,6 @@ const Dashboard = () => {
 
       {/* Main content */}
       <main className="lg:ml-64 p-4 sm:p-6 lg:p-8">
-        {!subscription.subscribed ? (
-          /* Subscription gate */
-          <motion.div
-            className="mx-auto max-w-lg text-center py-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-accent">
-              <Crown className="h-8 w-8 text-primary" />
-            </div>
-            <h2 className="text-2xl font-extrabold text-foreground">Assine o Plano Pro</h2>
-            <p className="mt-3 text-muted-foreground">
-              Para criar e gerenciar seus apps, assine o plano Pro.
-            </p>
-
-            {/* Billing toggle */}
-            <div className="mt-8 flex items-center justify-center gap-3">
-              <button
-                onClick={() => setBillingPeriod("monthly")}
-                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${billingPeriod === "monthly" ? "gradient-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-              >
-                Mensal
-              </button>
-              <button
-                onClick={() => setBillingPeriod("yearly")}
-                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${billingPeriod === "yearly" ? "gradient-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-              >
-                Anual <span className="ml-1 text-xs opacity-80">-30%</span>
-              </button>
-            </div>
-
-            <div className="mt-6 rounded-2xl border border-primary/30 bg-card p-8 shadow-card">
-              <div className="text-4xl font-extrabold text-foreground">
-                {billingPeriod === "monthly" ? "R$ 97,90" : "R$ 67,90"}
-                <span className="text-base font-normal text-muted-foreground">
-                  {billingPeriod === "monthly" ? "/mês" : "/mês (anual)"}
-                </span>
-              </div>
-              <Button
-                variant="hero"
-                size="lg"
-                className="mt-6 w-full"
-                onClick={handleCheckout}
-                disabled={checkoutLoading}
-              >
-                {checkoutLoading ? "Redirecionando..." : "Assinar Agora"}
-              </Button>
-            </div>
-
-            <button
-              onClick={checkSubscription}
-              className="mt-4 text-sm text-muted-foreground hover:text-foreground underline"
-            >
-              Já assinei? Verificar status
-            </button>
-          </motion.div>
-        ) : (
-          /* Dashboard content */
-          <>
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">Meus Aplicativos</h1>
@@ -399,8 +274,6 @@ const Dashboard = () => {
                 </Link>
               </div>
             )}
-          </>
-        )}
       </main>
 
       {/* Deploy dialog */}

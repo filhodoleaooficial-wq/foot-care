@@ -268,7 +268,7 @@ const ProductsManagement = () => {
     <div className="min-h-screen bg-secondary/30">
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-4 px-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/dashboard")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">

@@ -111,7 +111,7 @@ const VivaBemSidebar = ({ points = 78 }: VivaBemSidebarProps) => {
       <button
         onClick={() => {
           clearClientSession();
-          navigate("/");
+          navigate("/login");
         }}
         className="mx-2 mb-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white transition-colors"
       >

@@ -53,7 +53,7 @@ const ClientAppLayout = () => {
       <div className="flex min-h-screen flex-col items-center justify-center bg-background gap-4">
         <h1 className="text-2xl font-bold text-foreground">App não encontrado</h1>
         <p className="text-muted-foreground">O aplicativo que você procura não existe ou não está publicado.</p>
-        <button onClick={() => navigate("/")} className="text-primary hover:underline text-sm font-medium">
+        <button onClick={() => navigate("/login")} className="text-primary hover:underline text-sm font-medium">
           Voltar ao início
         </button>
       </div>

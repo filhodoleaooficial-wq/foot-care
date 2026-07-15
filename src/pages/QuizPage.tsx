@@ -99,7 +99,7 @@ const QuizPage = () => {
             Com base nas suas respostas, preparamos conteúdos personalizados para a saúde dos seus pés.
           </p>
           <Button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/login")}
             className="gradient-primary text-primary-foreground font-bold text-base px-8 py-6 rounded-xl shadow-glow"
           >
             Criar minha conta

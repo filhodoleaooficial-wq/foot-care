@@ -162,7 +162,7 @@ const AppCreation = () => {
       const { error } = await supabase.from("apps").update({ status: "published" }).eq("id", id);
       if (error) throw error;
       toast({ title: "App publicado com sucesso! 🎉" });
-      navigate("/dashboard");
+      navigate("/admin/dashboard");
     } catch (err: any) {
       toast({ title: "Erro ao publicar", description: err.message, variant: "destructive" });
     } finally {
@@ -232,7 +232,7 @@ const AppCreation = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex h-14 items-center justify-between px-4">
-          <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/admin/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium hidden sm:inline">Voltar</span>
           </Link>

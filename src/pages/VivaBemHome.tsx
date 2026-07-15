@@ -14,6 +14,7 @@ interface Product {
   cover_url: string | null;
   offer_type: string;
   section_id: string | null;
+  price: number | null;
 }
 
 interface SectionRow {
@@ -93,7 +94,7 @@ const VivaBemHome = () => {
   const handleProductCheckout = async (productId: string) => {
     const client = getClientSession();
     if (!client) {
-      navigate("/");
+      navigate("/login");
       return;
     }
     setCheckoutLoading(true);
@@ -119,7 +120,7 @@ const VivaBemHome = () => {
       const [prodRes, secRes, purchRes] = await Promise.all([
         supabase
           .from("products")
-          .select("id, name, description, cover_url, offer_type, section_id")
+          .select("id, name, description, cover_url, offer_type, section_id, price")
           .eq("app_id", app.id)
           .eq("is_published", true)
           .order("sort_order"),
@@ -236,7 +237,7 @@ const VivaBemHome = () => {
         sections.map((section) => (
           <CardSection key={section.title} title={section.title}>
             {section.products.map((product) => {
-              const isLocked = section.premium && !purchasedIds.has(product.id);
+              const isLocked = (section.premium || (product.price != null && product.price > 0)) && !purchasedIds.has(product.id);
               return (
                 <ContentCard
                   key={product.id}
@@ -246,8 +247,9 @@ const VivaBemHome = () => {
                   locked={isLocked}
                   onClick={() => {
                     if (isLocked) {
+                      const priceFormatted = product.price ? `R$ ${product.price.toFixed(2).replace(".", ",")}` : "R$ 27,90";
                       toast("Conteúdo bloqueado 🔒", {
-                        description: "Libere este curso por R$ 27,90 (pagamento único).",
+                        description: `Libere este curso por ${priceFormatted} (pagamento único).`,
                         action: {
                           label: checkoutLoading ? "Aguarde..." : "Comprar agora",
                           onClick: () => handleProductCheckout(product.id),

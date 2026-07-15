@@ -4,7 +4,7 @@ import { getClientSession } from "@/lib/client-session";
 const ClientProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = getClientSession();
 
-  if (!session) return <Navigate to="/" replace />;
+  if (!session) return <Navigate to="/login" replace />;
 
   return <>{children}</>;
 };

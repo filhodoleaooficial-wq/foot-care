@@ -33,6 +33,7 @@ const releaseTypes = [
 
 const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, existingProduct }: ProductModalProps) => {
   const [name, setName] = useState(existingProduct?.name || "");
+  const [price, setPrice] = useState(existingProduct?.price?.toString() || "");
   const [hiddenName, setHiddenName] = useState(existingProduct?.hidden_name || false);
   const [releaseType, setReleaseType] = useState(existingProduct?.release_type || "immediate");
   const [releaseValue, setReleaseValue] = useState(existingProduct?.release_value || "");
@@ -45,21 +46,56 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
   const [salesPageUrl, setSalesPageUrl] = useState(existingProduct?.sales_page_url || "");
   const [logoUnlockedUrl, setLogoUnlockedUrl] = useState<string | null>(existingProduct?.logo_unlocked_url || null);
   const [logoLockedUrl, setLogoLockedUrl] = useState<string | null>(existingProduct?.logo_locked_url || null);
+  const [coverUrl, setCoverUrl] = useState<string | null>(existingProduct?.cover_url || null);
   const [saving, setSaving] = useState(false);
   const [sections, setSections] = useState<{ id: string; title: string }[]>([]);
   const unlockedRef = useRef<HTMLInputElement>(null);
   const lockedRef = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     if (!open) return;
+    if (existingProduct) {
+      setName(existingProduct.name || "");
+      setPrice(existingProduct.price?.toString() || "");
+      setHiddenName(existingProduct.hidden_name || false);
+      setReleaseType(existingProduct.release_type || "immediate");
+      setReleaseValue(existingProduct.release_value || "");
+      setOfferType(existingProduct.offer_type || "main");
+      setSectionId(existingProduct.section_id || "");
+      setSortOrder(existingProduct.sort_order?.toString() || "0");
+      setColumnCount(existingProduct.column_count?.toString() || "2");
+      setExternalProductId(existingProduct.external_product_id || "");
+      setRedirectToSales(existingProduct.redirect_to_sales || false);
+      setSalesPageUrl(existingProduct.sales_page_url || "");
+      setLogoUnlockedUrl(existingProduct.logo_unlocked_url || null);
+      setLogoLockedUrl(existingProduct.logo_locked_url || null);
+      setCoverUrl(existingProduct.cover_url || null);
+    } else {
+      setName("");
+      setPrice("");
+      setHiddenName(false);
+      setReleaseType("immediate");
+      setReleaseValue("");
+      setOfferType("main");
+      setSectionId("");
+      setSortOrder("0");
+      setColumnCount("2");
+      setExternalProductId("");
+      setRedirectToSales(false);
+      setSalesPageUrl("");
+      setLogoUnlockedUrl(null);
+      setLogoLockedUrl(null);
+      setCoverUrl(null);
+    }
     supabase
       .from("sections")
       .select("id, title")
       .eq("app_id", appId)
       .order("sort_order")
       .then(({ data }) => setSections(data || []));
-  }, [open, appId]);
+  }, [open, appId, existingProduct]);
 
   const uploadFile = async (file: File) => {
     const ext = file.name.split(".").pop();
@@ -92,6 +128,7 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
         app_id: appId,
         user_id: userId,
         name: name.trim(),
+        price: price ? parseFloat(price) : null,
         hidden_name: hiddenName,
         release_type: releaseType,
         release_value: releaseValue || null,
@@ -104,6 +141,7 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
         sales_page_url: salesPageUrl || null,
         logo_unlocked_url: logoUnlockedUrl,
         logo_locked_url: logoLockedUrl,
+        cover_url: coverUrl,
       };
 
       if (existingProduct) {
@@ -138,6 +176,20 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
           <div className="space-y-2">
             <Label>Nome do Produto</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Tratamento Completo" />
+          </div>
+
+          {/* Price */}
+          <div className="space-y-2">
+            <Label>Preço (R$)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="0 = Gratuito"
+            />
+            <p className="text-xs text-muted-foreground">Deixe vazio ou 0 para conteúdo gratuito.</p>
           </div>
 
           <div className="flex items-center justify-between">
@@ -244,6 +296,25 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
               <Input value={salesPageUrl} onChange={(e) => setSalesPageUrl(e.target.value)} placeholder="https://..." />
             </div>
           )}
+
+          {/* Cover */}
+          <div className="space-y-2">
+            <Label>Capa do Produto</Label>
+            <input type="file" ref={coverRef} accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setCoverUrl)} />
+            <div
+              onClick={() => coverRef.current?.click()}
+              className="flex h-32 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-accent/30 hover:border-primary/60 overflow-hidden transition-colors"
+            >
+              {coverUrl ? (
+                <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <div className="text-center">
+                  <Upload className="h-6 w-6 text-muted-foreground mx-auto" />
+                  <p className="text-xs text-muted-foreground mt-1">Capa exibida na home</p>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Logos */}
           <div className="grid grid-cols-2 gap-4">

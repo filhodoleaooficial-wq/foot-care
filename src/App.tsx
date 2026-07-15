@@ -19,6 +19,8 @@ import ProductsManagement from "./pages/ProductsManagement";
 import ModulesManagement from "./pages/ModulesManagement";
 import SectionsManagement from "./pages/SectionsManagement";
 import WhatsAppPage from "./pages/WhatsAppPage";
+import BlogManagement from "./pages/BlogManagement";
+import CommunityManagement from "./pages/CommunityManagement";
 import CommunityPage from "./pages/CommunityPage";
 import FeedPage from "./pages/FeedPage";
 import SavedModulesPage from "./pages/SavedModulesPage";
@@ -44,14 +46,14 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Quiz (entry point) */}
-            <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/" element={<QuizPage />} />
+
+            {/* Client login */}
+            <Route path="/login" element={<VivaBemLogin />} />
 
             {/* Payment result pages */}
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
-
-            {/* Client login */}
-            <Route path="/" element={<VivaBemLogin />} />
 
             {/* Client protected routes */}
             <Route element={<ClientProtectedRoute><VivaBemLayout /></ClientProtectedRoute>}>
@@ -82,6 +84,8 @@ const App = () => (
             <Route path="/admin/product/:productId/modules" element={<ProtectedRoute><ModulesManagement /></ProtectedRoute>} />
             <Route path="/admin/app/:appId/sections" element={<ProtectedRoute><SectionsManagement /></ProtectedRoute>} />
             <Route path="/admin/whatsapp" element={<ProtectedRoute><WhatsAppPage /></ProtectedRoute>} />
+            <Route path="/admin/blog" element={<ProtectedRoute><BlogManagement /></ProtectedRoute>} />
+            <Route path="/admin/community" element={<ProtectedRoute><CommunityManagement /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
