@@ -62,7 +62,7 @@ const CommunityPage = () => {
     setLoading(true);
     const { error } = await supabase
       .from("community_posts")
-      .insert({ client_email: user.email || "", content: newPost.trim(), user_id: user.id });
+      .insert({ content: newPost.trim(), user_id: user.id });
     if (error) {
       toast.error("Erro ao publicar.");
     } else {
