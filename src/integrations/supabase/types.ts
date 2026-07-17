@@ -63,6 +63,9 @@ export type Database = {
           show_progress: boolean
           status: string
           support_email: string | null
+          support_phone: string | null
+          support_whatsapp: string | null
+          support_knowledge: string | null
           updated_at: string
           user_id: string
           visual_style: string
@@ -80,6 +83,9 @@ export type Database = {
           show_progress?: boolean
           status?: string
           support_email?: string | null
+          support_phone?: string | null
+          support_whatsapp?: string | null
+          support_knowledge?: string | null
           updated_at?: string
           user_id: string
           visual_style?: string
@@ -97,6 +103,9 @@ export type Database = {
           show_progress?: boolean
           status?: string
           support_email?: string | null
+          support_phone?: string | null
+          support_whatsapp?: string | null
+          support_knowledge?: string | null
           updated_at?: string
           user_id?: string
           visual_style?: string
