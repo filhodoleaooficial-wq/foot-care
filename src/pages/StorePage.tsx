@@ -23,7 +23,7 @@ const StorePage = () => {
         .from("products")
         .select("id, name, description, cover_url, price, sales_page_url")
         .eq("is_published", true)
-        .neq("offer_type", "free")
+        .not("offer_type", "in", '("free","bonus")')
         .order("sort_order");
       setProducts(data || []);
       setLoading(false);
