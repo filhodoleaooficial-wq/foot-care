@@ -23,6 +23,9 @@ import BlogManagement from "./pages/BlogManagement";
 import CommunityManagement from "./pages/CommunityManagement";
 import IntegrationsPage from "./pages/IntegrationsPage";
 import ClientsPage from "./pages/ClientsPage";
+import SalesPage from "./pages/SalesPage";
+import SupportPage from "./pages/SupportPage";
+import SettingsPage from "./pages/SettingsPage";
 import CommunityPage from "./pages/CommunityPage";
 import FeedPage from "./pages/FeedPage";
 import SavedModulesPage from "./pages/SavedModulesPage";
@@ -90,6 +93,9 @@ const App = () => (
             <Route path="/admin/community" element={<ProtectedRoute><CommunityManagement /></ProtectedRoute>} />
             <Route path="/admin/integrations" element={<ProtectedRoute><IntegrationsPage /></ProtectedRoute>} />
             <Route path="/admin/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
+            <Route path="/admin/sales" element={<ProtectedRoute><SalesPage /></ProtectedRoute>} />
+            <Route path="/admin/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -117,11 +117,11 @@ const Dashboard = () => {
             { icon: FileText, label: "Blog", href: "/admin/blog" },
             { icon: BookOpen, label: "Comunidade", href: "/admin/community" },
             { icon: MessageSquare, label: "WhatsApp", href: "/admin/whatsapp" },
-            { icon: BarChart3, label: "Vendas", href: "/admin/dashboard" },
+            { icon: BarChart3, label: "Vendas", href: "/admin/sales" },
             { icon: Link2, label: "Integrações", href: "/admin/integrations" },
             { icon: Users, label: "Meus Clientes", href: "/admin/clients" },
-            { icon: HelpCircle, label: "Suporte", href: "/admin/dashboard" },
-            { icon: Settings, label: "Configurações", href: "/admin/dashboard" },
+            { icon: HelpCircle, label: "Suporte", href: "/admin/support" },
+            { icon: Settings, label: "Configurações", href: "/admin/settings" },
           ].map((item) => (
             <Link
               key={item.label}
