@@ -116,6 +116,7 @@ const Dashboard = () => {
             { icon: ShoppingBag, label: "Produtos", href: "/admin/dashboard", count: sidebarCounts.products },
             { icon: FileText, label: "Blog", href: "/admin/blog" },
             { icon: BookOpen, label: "Comunidade", href: "/admin/community" },
+            { icon: HelpCircle, label: "Quiz", href: "/admin/quiz" },
             { icon: MessageSquare, label: "WhatsApp", href: "/admin/whatsapp" },
             { icon: BarChart3, label: "Vendas", href: "/admin/sales" },
             { icon: Link2, label: "Integrações", href: "/admin/integrations" },

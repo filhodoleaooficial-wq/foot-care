@@ -368,6 +368,47 @@ export type Database = {
           },
         ]
       }
+      quiz_questions: {
+        Row: {
+          id: string
+          app_id: string | null
+          question: string
+          options: Json
+          sort_order: number
+          is_published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          app_id?: string | null
+          question: string
+          options?: Json
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          app_id?: string | null
+          question?: string
+          options?: Json
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           app_id: string

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import { Footprints, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -9,52 +10,61 @@ interface Question {
   options: string[];
 }
 
-const questions: Question[] = [
+const fallbackQuestions: Question[] = [
   {
     question: "Qual é o seu principal problema nos pés?",
-    options: [
-      "Dor ao caminhar",
-      "Calosidades e rachaduras",
-      "Unha encravada",
-      "Joanete ou deformidade",
-      "Nenhum, quero prevenir",
-    ],
+    options: ["Dor ao caminhar", "Calosidades e rachaduras", "Unha encravada", "Joanete ou deformidade", "Nenhum, quero prevenir"],
   },
   {
     question: "Com que frequência sente desconforto nos pés?",
-    options: [
-      "Todos os dias",
-      "Algumas vezes por semana",
-      "Raramente",
-      "Nunca, mas quero cuidar melhor",
-    ],
+    options: ["Todos os dias", "Algumas vezes por semana", "Raramente", "Nunca, mas quero cuidar melhor"],
   },
   {
     question: "Você já consultou um podólogo ou especialista?",
-    options: [
-      "Sim, faço acompanhamento regular",
-      "Já consultei, mas não acompanho",
-      "Nunca consultei",
-    ],
+    options: ["Sim, faço acompanhamento regular", "Já consultei, mas não acompanho", "Nunca consultei"],
   },
   {
     question: "O que você espera do app PéSaúde?",
-    options: [
-      "Exercícios e alongamentos",
-      "Dicas de cuidados diários",
-      "Conteúdos educativos em vídeo",
-      "Comprar produtos para os pés",
-      "Tudo isso!",
-    ],
+    options: ["Exercícios e alongamentos", "Dicas de cuidados diários", "Conteúdos educativos em vídeo", "Comprar produtos para os pés", "Tudo isso!"],
   },
 ];
 
 const QuizPage = () => {
   const navigate = useNavigate();
+  const [questions, setQuestions] = useState<Question[]>(fallbackQuestions);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
+
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      const { data: app } = await supabase
+        .from("apps")
+        .select("id")
+        .eq("status", "published")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (app) {
+        const { data } = await supabase
+          .from("quiz_questions")
+          .select("question, options")
+          .eq("app_id", app.id)
+          .eq("is_published", true)
+          .order("sort_order");
+
+        if (data && data.length > 0) {
+          setQuestions(data.map((q) => ({
+            question: q.question,
+            options: Array.isArray(q.options) ? q.options : [],
+          })));
+        }
+      }
+    };
+    fetchQuiz();
+  }, []);
 
   const handleNext = () => {
     if (!selected) return;
@@ -93,7 +103,7 @@ const QuizPage = () => {
             <CheckCircle2 className="h-10 w-10 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-3">
-            Perfeito! 🦶
+            Perfeito!
           </h1>
           <p className="text-muted-foreground mb-8">
             Com base nas suas respostas, preparamos conteúdos personalizados para a saúde dos seus pés.

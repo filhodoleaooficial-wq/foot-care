@@ -26,6 +26,7 @@ import ClientsPage from "./pages/ClientsPage";
 import SalesPage from "./pages/SalesPage";
 import SupportPage from "./pages/SupportPage";
 import SettingsPage from "./pages/SettingsPage";
+import QuizManagement from "./pages/QuizManagement";
 import CommunityPage from "./pages/CommunityPage";
 import FeedPage from "./pages/FeedPage";
 import SavedModulesPage from "./pages/SavedModulesPage";
@@ -96,6 +97,7 @@ const App = () => (
             <Route path="/admin/sales" element={<ProtectedRoute><SalesPage /></ProtectedRoute>} />
             <Route path="/admin/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/admin/quiz" element={<ProtectedRoute><QuizManagement /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
