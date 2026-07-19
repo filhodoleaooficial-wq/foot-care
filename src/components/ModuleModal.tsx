@@ -149,7 +149,7 @@ const ModuleModal = ({ open, onOpenChange, productId, userId, onModuleCreated, e
 
           {/* Cover */}
           <div className="space-y-2">
-            <Label>Capa do Módulo (450×800)</Label>
+            <Label>Capa do Módulo</Label>
             <input type="file" ref={coverRef} accept="image/*" className="hidden" onChange={handleCoverUpload} />
             <div
               onClick={() => coverRef.current?.click()}
@@ -164,6 +164,7 @@ const ModuleModal = ({ open, onOpenChange, productId, userId, onModuleCreated, e
                 </div>
               )}
             </div>
+            <p className="text-xs text-muted-foreground">Tamanho ideal: 450×800px</p>
           </div>
 
           {/* Content type */}

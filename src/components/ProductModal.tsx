@@ -314,6 +314,7 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
                 </div>
               )}
             </div>
+            <p className="text-xs text-muted-foreground mt-1">Tamanho ideal: 400×600px (retrato)</p>
           </div>
 
           {/* Logos */}
@@ -331,6 +332,7 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
                   <Upload className="h-6 w-6 text-muted-foreground" />
                 )}
               </div>
+              <p className="text-xs text-muted-foreground">Tamanho ideal: 200×200px (quadrado)</p>
             </div>
             <div className="space-y-2">
               <Label>Logo Bloqueado 🔒</Label>
@@ -345,6 +347,7 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
                   <Upload className="h-6 w-6 text-muted-foreground" />
                 )}
               </div>
+              <p className="text-xs text-muted-foreground">Tamanho ideal: 200×200px (quadrado)</p>
             </div>
           </div>
 

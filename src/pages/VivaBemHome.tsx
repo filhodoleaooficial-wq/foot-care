@@ -1,11 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, BookOpen } from "lucide-react";
+import { Lock, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAppConfig } from "@/contexts/AppConfigContext";
 import { getClientSession } from "@/lib/client-session";
 import { toast } from "sonner";
+
+interface Banner {
+  id: string;
+  image_url: string;
+  link_url: string | null;
+  sort_order: number;
+}
 
 interface Product {
   id: string;
@@ -90,6 +97,9 @@ const VivaBemHome = () => {
   const [dbSections, setDbSections] = useState<SectionRow[]>([]);
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [currentBanner, setCurrentBanner] = useState(0);
+  const bannerTimerRef = useRef<ReturnType<typeof setInterval>>();
 
   const handleProductCheckout = async (productId: string) => {
     const client = getClientSession();
@@ -117,7 +127,7 @@ const VivaBemHome = () => {
     if (!app) return;
     const fetchData = async () => {
       const client = getClientSession();
-      const [prodRes, secRes, purchRes] = await Promise.all([
+      const [prodRes, secRes, purchRes, bannerRes] = await Promise.all([
         supabase
           .from("products")
           .select("id, name, description, cover_url, offer_type, section_id, price")
@@ -133,14 +143,39 @@ const VivaBemHome = () => {
         client
           ? supabase.functions.invoke("list-purchases", { body: { clientId: client.id } })
           : Promise.resolve({ data: { productIds: [] as string[] } }),
+        supabase
+          .from("banners")
+          .select("id, image_url, link_url, sort_order")
+          .eq("app_id", app.id)
+          .eq("is_active", true)
+          .order("sort_order"),
       ]);
       setProducts(prodRes.data || []);
       setDbSections(secRes.data || []);
       const ids: string[] = (purchRes as any)?.data?.productIds ?? [];
       setPurchasedIds(new Set(ids));
+      setBanners(bannerRes.data || []);
     };
     fetchData();
   }, [app]);
+
+  // Auto-rotate banners
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    bannerTimerRef.current = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % banners.length);
+    }, 4000);
+    return () => clearInterval(bannerTimerRef.current);
+  }, [banners.length]);
+
+  const prevBanner = () => {
+    clearInterval(bannerTimerRef.current);
+    setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
+  };
+  const nextBanner = () => {
+    clearInterval(bannerTimerRef.current);
+    setCurrentBanner((prev) => (prev + 1) % banners.length);
+  };
 
 
   // Group products into sections from DB
@@ -228,6 +263,41 @@ const VivaBemHome = () => {
           )}
         </div>
       </header>
+
+      {/* Banner carousel */}
+      {banners.length > 0 && (
+        <div className="-mx-6 mb-6">
+          <div className="relative rounded-none sm:rounded-2xl sm:mx-6 overflow-hidden bg-muted">
+            <div className="relative aspect-video sm:aspect-[21/9]">
+              {banners.map((banner, i) => (
+                <div
+                  key={banner.id}
+                  className={`absolute inset-0 transition-opacity duration-500 ${i === currentBanner ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+                  onClick={() => banner.link_url && window.open(banner.link_url, "_blank")}
+                  style={{ cursor: banner.link_url ? "pointer" : "default" }}
+                >
+                  <img src={banner.image_url} alt="Banner" className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+            {banners.length > 1 && (
+              <>
+                <button onClick={prevBanner} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-sm">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button onClick={nextBanner} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-sm">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+                  {banners.map((_, i) => (
+                    <div key={i} className={`h-1.5 rounded-full transition-all ${i === currentBanner ? "w-5 bg-white" : "w-1.5 bg-white/50"}`} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Dynamic sections */}
       {sections.length > 0 ? (

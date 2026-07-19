@@ -58,7 +58,10 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
   if (type === "pdf" && resolvedUrl) {
     return (
       <div className="rounded-xl overflow-hidden border border-border bg-card">
-        <iframe src={resolvedUrl} className="w-full h-[70vh]" title="PDF Viewer" />
+        <iframe src={resolvedUrl} className="w-full h-[50vh] md:h-[70vh]" title="PDF Viewer" />
+        <a href={resolvedUrl} target="_blank" rel="noopener noreferrer" className="block text-center text-xs text-primary py-2 border-t border-border">
+          Abrir PDF em nova aba
+        </a>
       </div>
     );
   }
@@ -221,7 +224,7 @@ const VivaBemProduct = () => {
       </AnimatePresence>
 
       {/* Modules accordion */}
-      <div className="px-6 mt-8 pb-12 space-y-3">
+      <div className="px-4 md:px-6 mt-8 pb-20 space-y-3">
         {modules.map((mod) => {
           const modLessons = lessonsForModule(mod.id);
           const isOpen = expandedModule === mod.id;

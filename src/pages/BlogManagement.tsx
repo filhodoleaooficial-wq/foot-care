@@ -293,6 +293,7 @@ const BlogArticleModal = ({ open, onOpenChange, appId, userId, existing, onSaved
                 </div>
               )}
             </label>
+            <p className="text-xs text-muted-foreground">Tamanho ideal: 1200×630px (formato paisagem)</p>
           </div>
           <div className="flex gap-3 justify-end pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>

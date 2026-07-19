@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, Copy, Check, MessageSquare, Share2, Layers, FileText, BookOpen } from "lucide-react";
+import { Plus, ExternalLink, Package, Rocket, Pencil, Trash2, Menu, X, LayoutDashboard, ShoppingBag, BarChart3, Settings, HelpCircle, Users, Link2, LogOut, Copy, Check, MessageSquare, Share2, Layers, FileText, BookOpen, Image as ImageIcon, GripVertical } from "lucide-react";
 import DeployDialog from "@/components/DeployDialog";
+import BannerModal from "@/components/BannerModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,24 +18,39 @@ interface App {
   created_at: string;
 }
 
+interface Banner {
+  id: string;
+  app_id: string;
+  image_url: string;
+  link_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
 interface SidebarCounts {
   apps: number;
   products: number;
+  banners: number;
 }
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [apps, setApps] = useState<App[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
   const [copiedAppId, setCopiedAppId] = useState<string | null>(null);
   const [deployApp, setDeployApp] = useState<App | null>(null);
-  const [sidebarCounts, setSidebarCounts] = useState<SidebarCounts>({ apps: 0, products: 0 });
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [sidebarCounts, setSidebarCounts] = useState<SidebarCounts>({ apps: 0, products: 0, banners: 0 });
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchApps();
+    fetchBanners();
   }, []);
 
   const fetchApps = async () => {
@@ -56,6 +72,29 @@ const Dashboard = () => {
       .from("products")
       .select("*", { count: "exact", head: true });
     setSidebarCounts((prev) => ({ ...prev, products: count || 0 }));
+  };
+
+  const fetchBanners = async () => {
+    const { data, error } = await supabase
+      .from("banners")
+      .select("*")
+      .order("sort_order", { ascending: true });
+
+    if (!error) {
+      setBanners(data || []);
+      setSidebarCounts((prev) => ({ ...prev, banners: (data || []).length }));
+    }
+  };
+
+  const deleteBanner = async (id: string) => {
+    const { error } = await supabase.from("banners").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+    } else {
+      setBanners((prev) => prev.filter((b) => b.id !== id));
+      setSidebarCounts((prev) => ({ ...prev, banners: prev.banners - 1 }));
+      toast({ title: "Banner excluído" });
+    }
   };
 
   const deleteApp = async (id: string) => {
@@ -114,6 +153,7 @@ const Dashboard = () => {
           {[
             { icon: LayoutDashboard, label: "Meus Apps", href: "/admin/dashboard", count: sidebarCounts.apps },
             { icon: ShoppingBag, label: "Produtos", href: "/admin/dashboard", count: sidebarCounts.products },
+            { icon: ImageIcon, label: "Banners", href: "/admin/dashboard#banners", count: sidebarCounts.banners },
             { icon: FileText, label: "Blog", href: "/admin/blog" },
             { icon: BookOpen, label: "Comunidade", href: "/admin/community" },
             { icon: HelpCircle, label: "Quiz", href: "/admin/quiz" },
@@ -153,6 +193,65 @@ const Dashboard = () => {
 
       {/* Main content */}
       <main className="lg:ml-64 p-4 sm:p-6 lg:p-8">
+            {/* Banners Section */}
+            <section id="banners" className="mb-8">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-extrabold text-foreground">Banners</h2>
+                  <p className="text-sm text-muted-foreground">Gerencie os banners dos seus aplicativos.</p>
+                </div>
+                <Button variant="hero" size="sm" className="gap-1.5" onClick={() => { setEditingBanner(null); setBannerModalOpen(true); }}>
+                  <Plus className="h-4 w-4" /> Novo Banner
+                </Button>
+              </div>
+              {banners.length === 0 ? (
+                <div className="rounded-xl border-2 border-dashed border-muted p-8 text-center">
+                  <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">Nenhum banner criado ainda.</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {banners.map((banner) => {
+                    const appName = apps.find((a) => a.id === banner.app_id)?.name || "App";
+                    return (
+                      <div key={banner.id} className="group rounded-xl border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all">
+                        <div className="relative h-32 bg-muted">
+                          <img src={banner.image_url} alt="Banner" className="w-full h-full object-cover" />
+                          <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-xs font-semibold ${banner.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                            {banner.is_active ? "Ativo" : "Inativo"}
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-xs font-medium text-muted-foreground">App: {appName}</span>
+                              {banner.link_url && (
+                                <p className="text-xs text-primary truncate max-w-[180px]">{banner.link_url}</p>
+                              )}
+                            </div>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => { setEditingBanner(banner); setBannerModalOpen(true); }}
+                                className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => deleteBanner(banner.id)}
+                                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">Meus Aplicativos</h1>
@@ -303,6 +402,16 @@ const Dashboard = () => {
           }}
         />
       )}
+
+      {/* Banner modal */}
+      <BannerModal
+        open={bannerModalOpen}
+        onOpenChange={setBannerModalOpen}
+        apps={apps}
+        userId={user?.id || ""}
+        onBannerSaved={fetchBanners}
+        existingBanner={editingBanner}
+      />
     </div>
   );
 };

@@ -298,6 +298,7 @@ const AppCreation = () => {
                     <div onClick={() => logoInputRef.current?.click()} className="flex h-32 w-32 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-accent/30 transition-colors hover:border-primary/60 overflow-hidden">
                       {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" /> : <Upload className="h-8 w-8 text-muted-foreground" />}
                     </div>
+                    <p className="text-xs text-muted-foreground">Tamanho ideal: 200×200px (quadrado)</p>
                   </div>
                   <div className="space-y-2">
                     <Label>Mensagem de Boas-vindas</Label>
@@ -322,6 +323,7 @@ const AppCreation = () => {
                         </div>
                       )}
                     </div>
+                    <p className="text-xs text-muted-foreground">Tamanho ideal: 1920×1080px (fundo de tela)</p>
                   </div>
                 </div>
               )}
