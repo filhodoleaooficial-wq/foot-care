@@ -69,36 +69,33 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
   if (type === "pdf" && resolvedUrl) {
     return (
       <div className="rounded-xl overflow-hidden border border-border bg-card">
-        <div className="hidden md:block">
-          <iframe src={resolvedUrl} className="w-full h-[70vh]" title="PDF Viewer" />
-        </div>
-        <div className="p-6 flex flex-col items-center gap-4 md:hidden">
-          <FileText className="h-12 w-12 text-primary/60" />
-          <p className="text-sm text-muted-foreground text-center">Visualização não disponível neste dispositivo.</p>
-          <a
-            href={resolvedUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg"
-          >
-            <FileText className="h-5 w-5" /> Abrir PDF
-          </a>
-          <a
-            href={resolvedUrl}
-            download
-            className="text-xs text-muted-foreground underline"
-          >
-            Baixar arquivo
-          </a>
-        </div>
-        <a
-          href={resolvedUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden md:block text-center text-xs text-primary py-2 border-t border-border"
+        <object
+          data={resolvedUrl}
+          type="application/pdf"
+          className="w-full h-[60vh] md:h-[75vh]"
         >
-          Abrir PDF em nova aba
-        </a>
+          <div className="flex flex-col items-center justify-center h-full p-6 bg-muted/30">
+            <FileText className="h-12 w-12 text-muted-foreground/40 mb-3" />
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              Seu dispositivo não suporta visualização inline.
+            </p>
+            <a
+              href={resolvedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg"
+            >
+              <FileText className="h-5 w-5" /> Abrir PDF
+            </a>
+            <a
+              href={resolvedUrl}
+              download
+              className="mt-3 text-xs text-muted-foreground underline"
+            >
+              Baixar arquivo
+            </a>
+          </div>
+        </object>
       </div>
     );
   }
