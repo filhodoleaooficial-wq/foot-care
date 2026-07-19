@@ -36,16 +36,27 @@ interface Lesson {
 
 const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null; text?: string | null }) => {
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+  const [loadingUrl, setLoadingUrl] = useState(false);
 
   useEffect(() => {
     if (url) {
-      getContentUrl(url).then(setResolvedUrl);
+      setLoadingUrl(true);
+      getContentUrl(url).then((u) => {
+        setResolvedUrl(u);
+        setLoadingUrl(false);
+      });
     } else {
       setResolvedUrl(null);
+      setLoadingUrl(false);
     }
   }, [url]);
 
-  if (!resolvedUrl && !text) return null;
+  if (!resolvedUrl && !text) {
+    if (loadingUrl) {
+      return <div className="text-center py-8 text-muted-foreground text-sm">Carregando...</div>;
+    }
+    return null;
+  }
 
   if (type === "video" && resolvedUrl) {
     return (
@@ -58,8 +69,34 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
   if (type === "pdf" && resolvedUrl) {
     return (
       <div className="rounded-xl overflow-hidden border border-border bg-card">
-        <iframe src={resolvedUrl} className="w-full h-[50vh] md:h-[70vh]" title="PDF Viewer" />
-        <a href={resolvedUrl} target="_blank" rel="noopener noreferrer" className="block text-center text-xs text-primary py-2 border-t border-border">
+        <div className="hidden md:block">
+          <iframe src={resolvedUrl} className="w-full h-[70vh]" title="PDF Viewer" />
+        </div>
+        <div className="p-6 flex flex-col items-center gap-4 md:hidden">
+          <FileText className="h-12 w-12 text-primary/60" />
+          <p className="text-sm text-muted-foreground text-center">Visualização não disponível neste dispositivo.</p>
+          <a
+            href={resolvedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg"
+          >
+            <FileText className="h-5 w-5" /> Abrir PDF
+          </a>
+          <a
+            href={resolvedUrl}
+            download
+            className="text-xs text-muted-foreground underline"
+          >
+            Baixar arquivo
+          </a>
+        </div>
+        <a
+          href={resolvedUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden md:block text-center text-xs text-primary py-2 border-t border-border"
+        >
           Abrir PDF em nova aba
         </a>
       </div>
@@ -159,6 +196,7 @@ const VivaBemProduct = () => {
         supabase.from("products").select("id, name, description, cover_url").eq("id", productId).single(),
         supabase.from("modules").select("*").eq("product_id", productId).eq("is_published", true).order("sort_order"),
       ]);
+      if (mRes.error) console.error("Modules fetch error:", mRes.error);
       setProduct(pRes.data);
       const mods = (mRes.data || []) as Module[];
       setModules(mods);
@@ -284,8 +322,11 @@ const VivaBemProduct = () => {
           );
         })}
 
-        {modules.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">Nenhum módulo disponível ainda.</p>
+        {modules.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <FileText className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+            <p className="text-muted-foreground text-sm">Este conteúdo será disponibilizado em breve.</p>
+          </div>
         )}
       </div>
     </div>
