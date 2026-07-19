@@ -91,8 +91,8 @@ const QuizPage = () => {
   if (finished) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden px-4">
-        <div className="absolute top-[-80px] right-[-60px] w-64 h-64 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute bottom-[-100px] left-[-80px] w-80 h-80 rounded-full bg-accent blur-3xl" />
+        <div className="absolute top-[-80px] right-[-60px] w-40 sm:w-64 h-40 sm:h-64 rounded-full bg-primary/20 blur-3xl" />
+        <div className="absolute bottom-[-100px] left-[-80px] w-48 sm:w-80 h-48 sm:h-80 rounded-full bg-accent blur-3xl" />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -125,8 +125,8 @@ const QuizPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
-      <div className="absolute top-[-80px] right-[-60px] w-64 h-64 rounded-full bg-primary/20 blur-3xl" />
-      <div className="absolute bottom-[-100px] left-[-80px] w-80 h-80 rounded-full bg-accent blur-3xl" />
+      <div className="absolute top-[-80px] right-[-60px] w-40 sm:w-64 h-40 sm:h-64 rounded-full bg-primary/20 blur-3xl" />
+      <div className="absolute bottom-[-100px] left-[-80px] w-48 sm:w-80 h-48 sm:h-80 rounded-full bg-accent blur-3xl" />
 
       {/* Header */}
       <div className="relative z-10 px-6 pt-8">

@@ -89,9 +89,9 @@ const VivaBemLogin = () => {
           : `linear-gradient(135deg, ${accentColor}18, ${accentColor}08, hsl(var(--background)))`,
       }}
     >
-      <div className="absolute top-[-80px] right-[-60px] w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: `${accentColor}30` }} />
-      <div className="absolute bottom-[-100px] left-[-80px] w-80 h-80 rounded-full bg-accent blur-3xl" />
-      <div className="absolute top-20 left-10 w-32 h-32 rounded-full blur-2xl" style={{ backgroundColor: `${accentColor}15` }} />
+      <div className="absolute top-[-80px] right-[-60px] w-40 sm:w-64 h-40 sm:h-64 rounded-full blur-3xl" style={{ backgroundColor: `${accentColor}30` }} />
+      <div className="absolute bottom-[-100px] left-[-80px] w-48 sm:w-80 h-48 sm:h-80 rounded-full bg-accent blur-3xl" />
+      <div className="absolute top-20 left-10 w-20 sm:w-32 h-20 sm:h-32 rounded-full blur-2xl" style={{ backgroundColor: `${accentColor}15` }} />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -110,7 +110,7 @@ const VivaBemLogin = () => {
               <BookOpen className="h-8 w-8 text-white" />
             </div>
           )}
-          <h1 className="text-4xl font-bold text-foreground tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
             {app?.name || "App"}
           </h1>
           {app?.welcome_text && (

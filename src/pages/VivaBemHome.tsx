@@ -266,7 +266,7 @@ const VivaBemHome = () => {
 
       {/* Banner carousel */}
       {banners.length > 0 && (
-        <div className="-mx-6 mb-6">
+        <div className="mb-6">
           <div className="relative rounded-none sm:rounded-2xl sm:mx-6 overflow-hidden bg-muted">
             <div className="relative aspect-video sm:aspect-[21/9]">
               {banners.map((banner, i) => (
