@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getContentUrl } from "@/lib/content-url";
 import { getClientSession } from "@/lib/client-session";
+import { Document, Page, pdfjs } from "react-pdf";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface Product {
   id: string;
@@ -67,37 +70,7 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
   }
 
   if (type === "pdf" && resolvedUrl) {
-    return (
-      <div className="rounded-xl overflow-hidden border border-border bg-card">
-        <object
-          data={resolvedUrl}
-          type="application/pdf"
-          className="w-full h-[60vh] md:h-[75vh]"
-        >
-          <div className="flex flex-col items-center justify-center h-full p-6 bg-muted/30">
-            <FileText className="h-12 w-12 text-muted-foreground/40 mb-3" />
-            <p className="text-sm text-muted-foreground text-center mb-4">
-              Seu dispositivo não suporta visualização inline.
-            </p>
-            <a
-              href={resolvedUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg"
-            >
-              <FileText className="h-5 w-5" /> Abrir PDF
-            </a>
-            <a
-              href={resolvedUrl}
-              download
-              className="mt-3 text-xs text-muted-foreground underline"
-            >
-              Baixar arquivo
-            </a>
-          </div>
-        </object>
-      </div>
-    );
+    return <PdfViewer url={resolvedUrl} />;
   }
 
   if (type === "audio" && resolvedUrl) {
@@ -124,6 +97,83 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
   }
 
   return null;
+};
+
+const PdfViewer = ({ url }: { url: string }) => {
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [error, setError] = useState(false);
+  const [pageWidth, setPageWidth] = useState(600);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth - 2;
+        setPageWidth(Math.min(w, 800));
+      }
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-8 flex flex-col items-center gap-4">
+        <FileText className="h-12 w-12 text-muted-foreground/40" />
+        <p className="text-sm text-muted-foreground text-center">Não foi possível renderizar o PDF.</p>
+        <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg">
+          <FileText className="h-5 w-5" /> Abrir PDF externo
+        </a>
+        <a href={url} download className="text-xs text-muted-foreground underline">Baixar arquivo</a>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="rounded-xl overflow-hidden border border-border bg-card">
+      <Document
+        file={url}
+        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+        onLoadError={() => setError(true)}
+        loading={
+          <div className="flex items-center justify-center h-[60vh] md:h-[75vh]">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        }
+      >
+        <Page
+          pageNumber={pageNumber}
+          width={pageWidth}
+          renderTextLayer={false}
+          renderAnnotationLayer={false}
+          className="flex justify-center bg-muted/20"
+        />
+      </Document>
+      {numPages && numPages > 1 && (
+        <div className="flex items-center justify-center gap-4 border-t border-border py-3">
+          <button
+            onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
+            disabled={pageNumber <= 1}
+            className="h-8 w-8 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="text-sm text-muted-foreground">
+            {pageNumber} / {numPages}
+          </span>
+          <button
+            onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
+            disabled={pageNumber >= numPages}
+            className="h-8 w-8 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const typeIcon = (t: string) => {
