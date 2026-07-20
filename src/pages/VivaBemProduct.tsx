@@ -103,19 +103,14 @@ const PdfViewer = ({ url }: { url: string }) => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [error, setError] = useState(false);
-  const [pageWidth, setPageWidth] = useState(600);
+  const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) {
-        const w = containerRef.current.clientWidth - 2;
-        setPageWidth(Math.min(w, 800));
-      }
-    };
-    updateWidth();
-    window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
+    if (containerRef.current) {
+      const w = containerRef.current.clientWidth - 2;
+      setScale(Math.min(1, w / 800));
+    }
   }, []);
 
   if (error) {
@@ -133,45 +128,66 @@ const PdfViewer = ({ url }: { url: string }) => {
 
   return (
     <div ref={containerRef} className="rounded-xl overflow-hidden border border-border bg-card">
-      <Document
-        file={url}
-        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-        onLoadError={() => setError(true)}
-        loading={
-          <div className="flex items-center justify-center h-[60vh] md:h-[75vh]">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
-        }
-      >
-        <Page
-          pageNumber={pageNumber}
-          width={pageWidth}
-          renderTextLayer={false}
-          renderAnnotationLayer={false}
-          className="flex justify-center bg-muted/20"
-        />
-      </Document>
-      {numPages && numPages > 1 && (
-        <div className="flex items-center justify-center gap-4 border-t border-border py-3">
+      <div className="overflow-x-auto">
+        <Document
+          file={url}
+          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+          onLoadError={() => setError(true)}
+          loading={
+            <div className="flex items-center justify-center h-[60vh] md:h-[75vh]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          }
+        >
+          <Page
+            pageNumber={pageNumber}
+            scale={scale}
+            renderTextLayer={false}
+            renderAnnotationLayer={false}
+            className="flex justify-center bg-muted/20"
+          />
+        </Document>
+      </div>
+      <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
-            disabled={pageNumber <= 1}
-            className="h-8 w-8 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
+            onClick={() => setScale((s) => Math.round((s - 0.25) * 100) / 100)}
+            disabled={scale <= 0.5}
+            className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-xs disabled:opacity-30"
           >
-            <ChevronLeft className="h-4 w-4" />
+            -
           </button>
-          <span className="text-sm text-muted-foreground">
-            {pageNumber} / {numPages}
-          </span>
+          <span className="text-xs text-muted-foreground min-w-[3rem] text-center">{Math.round(scale * 100)}%</span>
           <button
-            onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
-            disabled={pageNumber >= numPages}
-            className="h-8 w-8 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
+            onClick={() => setScale((s) => Math.round((s + 0.25) * 100) / 100)}
+            disabled={scale >= 2}
+            className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-xs disabled:opacity-30"
           >
-            <ChevronRight className="h-4 w-4" />
+            +
           </button>
         </div>
-      )}
+        {numPages && numPages > 1 && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
+              disabled={pageNumber <= 1}
+              className="h-7 w-7 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="text-xs text-muted-foreground min-w-[4rem] text-center">
+              {pageNumber} / {numPages}
+            </span>
+            <button
+              onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
+              disabled={pageNumber >= numPages}
+              className="h-7 w-7 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
