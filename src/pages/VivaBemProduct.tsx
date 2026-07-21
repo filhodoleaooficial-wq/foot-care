@@ -103,14 +103,19 @@ const PdfViewer = ({ url }: { url: string }) => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [error, setError] = useState(false);
-  const [scale, setScale] = useState(1);
+  const [zoom, setZoom] = useState(100);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(400);
 
   useEffect(() => {
-    if (containerRef.current) {
-      const w = containerRef.current.clientWidth - 2;
-      setScale(Math.min(1, w / 800));
-    }
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth - 2);
+      }
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
   if (error) {
@@ -126,41 +131,45 @@ const PdfViewer = ({ url }: { url: string }) => {
     );
   }
 
+  const renderWidth = Math.round(containerWidth * zoom / 100);
+
   return (
     <div ref={containerRef} className="rounded-xl overflow-hidden border border-border bg-card">
-      <div className="overflow-x-auto">
-        <Document
-          file={url}
-          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-          onLoadError={() => setError(true)}
-          loading={
-            <div className="flex items-center justify-center h-[60vh] md:h-[75vh]">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            </div>
-          }
-        >
-          <Page
-            pageNumber={pageNumber}
-            scale={scale}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-            className="flex justify-center bg-muted/20"
-          />
-        </Document>
+      <div className="overflow-x-auto overflow-y-hidden">
+        <div style={{ width: renderWidth }} className="min-w-full">
+          <Document
+            file={url}
+            onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+            onLoadError={() => setError(true)}
+            loading={
+              <div className="flex items-center justify-center h-[60vh] md:h-[75vh]">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              </div>
+            }
+          >
+            <Page
+              pageNumber={pageNumber}
+              width={renderWidth}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              className="flex justify-center bg-muted/20"
+            />
+          </Document>
+        </div>
       </div>
       <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setScale((s) => Math.round((s - 0.25) * 100) / 100)}
-            disabled={scale <= 0.5}
+            onClick={() => setZoom((z) => Math.max(50, z - 25))}
+            disabled={zoom <= 50}
             className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-xs disabled:opacity-30"
           >
             -
           </button>
-          <span className="text-xs text-muted-foreground min-w-[3rem] text-center">{Math.round(scale * 100)}%</span>
+          <span className="text-xs text-muted-foreground min-w-[3rem] text-center">{zoom}%</span>
           <button
-            onClick={() => setScale((s) => Math.round((s + 0.25) * 100) / 100)}
-            disabled={scale >= 2}
+            onClick={() => setZoom((z) => Math.min(300, z + 25))}
+            disabled={zoom >= 300}
             className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-xs disabled:opacity-30"
           >
             +
