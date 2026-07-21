@@ -47,7 +47,7 @@ const VivaBemSidebar = ({ points = 78, onToggle }: VivaBemSidebarProps) => {
       {/* Mobile hamburger button */}
       <button
         onClick={toggleMobile}
-        className="fixed top-4 left-4 z-[60] md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white/20 backdrop-blur-md text-white shadow-lg"
+        className="fixed top-4 left-4 z-[60] lg:hidden flex items-center justify-center h-10 w-10 rounded-full bg-gray-900/80 backdrop-blur-md text-white shadow-lg"
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
@@ -59,7 +59,7 @@ const VivaBemSidebar = ({ points = 78, onToggle }: VivaBemSidebarProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
             onClick={toggleMobile}
           />
         )}
@@ -70,7 +70,7 @@ const VivaBemSidebar = ({ points = 78, onToggle }: VivaBemSidebarProps) => {
         className={`fixed left-0 top-0 z-50 h-screen flex flex-col transition-all duration-300 ${
           collapsed ? "w-16" : "w-56"
         } ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
         style={{ backgroundColor: "hsl(var(--sidebar-background))" }}
       >
@@ -160,7 +160,7 @@ const VivaBemSidebar = ({ points = 78, onToggle }: VivaBemSidebarProps) => {
         {/* Collapse toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="mx-auto mb-6 hidden md:flex items-center justify-center h-8 w-8 rounded-full bg-sidebar-accent text-sidebar-foreground hover:text-white transition-colors"
+          className="mx-auto mb-6 hidden lg:flex items-center justify-center h-8 w-8 rounded-full bg-sidebar-accent text-sidebar-foreground hover:text-white transition-colors"
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
