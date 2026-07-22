@@ -40,6 +40,36 @@ serve(async (req) => {
   );
 
   try {
+    // Require authenticated admin (app owner) before sending WhatsApp messages
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
+    if (claimsErr || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = claimsData.claims.sub as string;
+    const { data: ownedApp } = await supabase
+      .from("apps")
+      .select("id")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+    if (!ownedApp) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const config = await getWhatsAppConfig(supabase);
     if (!config.apiUrl) throw new Error('EVOLUTION_API_URL is not configured. Acesse Integrações no painel para configurar.');
     if (!config.apiKey) throw new Error('EVOLUTION_API_KEY is not configured. Acesse Integrações no painel para configurar.');

@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import DOMPurify from "dompurify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,7 +99,7 @@ const LessonModal = ({ open, onOpenChange, moduleId, userId, onLessonCreated, ex
       return (
         <div
           className="rounded-md border bg-background p-3 text-sm"
-          dangerouslySetInnerHTML={{ __html: contentText }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(contentText) }}
         />
       );
     }

@@ -30,6 +30,15 @@ serve(async (req) => {
       });
     }
 
+    if (!phone || phone.replace(/\D/g, "").length < 8) {
+      return new Response(JSON.stringify({ error: "Celular é obrigatório." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const normalizePhone = (p: string) => p.replace(/\D/g, "");
+
     // Try to find existing client by email
     const { data: existing } = await supabase
       .from("app_clients")
@@ -42,9 +51,20 @@ serve(async (req) => {
     let clientPhone = existing?.phone ?? phone;
 
     if (existing) {
+      // Require phone match to prevent account takeover by email alone.
+      // If existing has no phone stored, adopt the submitted one (legacy accounts).
+      const storedNormalized = normalizePhone(String(existing.phone ?? ""));
+      const submittedNormalized = normalizePhone(phone);
+      if (storedNormalized && storedNormalized !== submittedNormalized) {
+        return new Response(
+          JSON.stringify({ error: "E-mail e celular não conferem. Verifique seus dados." }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const updates: Record<string, unknown> = {};
       if (userId) updates.user_id = userId;
-      if (phone && phone !== existing.phone) {
+      if (!storedNormalized && phone) {
         updates.phone = phone;
         clientPhone = phone;
       }

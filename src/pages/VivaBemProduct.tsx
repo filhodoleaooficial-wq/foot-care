@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import DOMPurify from "dompurify";
 import { getContentUrl } from "@/lib/content-url";
 import { getClientSession } from "@/lib/client-session";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -84,7 +85,7 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
 
   if (type === "text" && text) {
     return (
-      <div className="rounded-xl bg-card border border-border p-6 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: text }} />
+      <div className="rounded-xl bg-card border border-border p-6 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />
     );
   }
 
