@@ -58,7 +58,7 @@ const QuizPage = () => {
         if (data && data.length > 0) {
           setQuestions(data.map((q) => ({
             question: q.question,
-            options: Array.isArray(q.options) ? q.options : [],
+            options: Array.isArray(q.options) ? (q.options as unknown[]).map(String) : [],
           })));
         }
       }
