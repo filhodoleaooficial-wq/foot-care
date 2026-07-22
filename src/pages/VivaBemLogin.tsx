@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { BookOpen, Mail } from "lucide-react";
+import { BookOpen, Mail, Phone } from "lucide-react";
 import { setClientSession } from "@/lib/client-session";
 
 interface AppConfig {
@@ -22,6 +22,7 @@ const VivaBemLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [app, setApp] = useState<AppConfig | null>(null);
   const [appLoading, setAppLoading] = useState(true);
@@ -49,8 +50,9 @@ const VivaBemLogin = () => {
     }
     setLoading(true);
     try {
+      const fullPhone = phone ? `+55${phone.replace(/\D/g, "")}` : "";
       const { data: clientData, error: clientError } = await supabase.functions.invoke("client-login", {
-        body: { email },
+        body: { email, phone: fullPhone },
       });
       if (clientError) throw clientError;
       if (clientData?.error) throw new Error(clientData.error);
@@ -59,7 +61,7 @@ const VivaBemLogin = () => {
       setClientSession({
         id: clientData.id,
         email,
-        phone: "",
+        phone: fullPhone,
       });
       toast({ title: `Bem-vindo ao ${app?.name || "App"}!` });
       navigate("/home");
@@ -133,6 +135,21 @@ const VivaBemLogin = () => {
                   className="pl-10" required
                 />
               </div>
+            </div>
+            <div>
+              <Label htmlFor="phone" className="text-sm font-medium">Celular (opcional)</Label>
+              <div className="relative mt-1.5">
+                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <span className="absolute left-9 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">+55</span>
+                <Input
+                  id="phone" type="tel" placeholder="21988134920"
+                  value={phone} onChange={(e) => setPhone(e.target.value)}
+                  className="pl-16"
+                />
+              </div>
+              <p className="mt-1.5 text-[11px] text-muted-foreground leading-snug">
+                Ao informar seu celular, você concorda em receber mensagens e novidades pelo WhatsApp.
+              </p>
             </div>
             <Button
               type="submit" disabled={loading}
