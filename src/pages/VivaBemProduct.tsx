@@ -85,7 +85,7 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
 
   if (type === "text" && text) {
     return (
-      <div className="rounded-xl bg-card border border-border p-6 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: text }} />
+      <div className="rounded-xl bg-card border border-border p-6 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />
     );
   }
 
