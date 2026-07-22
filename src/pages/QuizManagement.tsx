@@ -46,7 +46,7 @@ const QuizManagement = () => {
           setQuestions(data.map((q) => ({
             id: q.id,
             question: q.question,
-            options: Array.isArray(q.options) ? q.options : [],
+            options: Array.isArray(q.options) ? (q.options as unknown[]).map(String) : [],
             sort_order: q.sort_order,
             is_published: q.is_published,
           })));
