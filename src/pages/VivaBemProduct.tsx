@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import DOMPurify from "dompurify";
 import { getContentUrl } from "@/lib/content-url";
 import { getClientSession } from "@/lib/client-session";
 import { Document, Page, pdfjs } from "react-pdf";
