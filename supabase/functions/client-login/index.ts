@@ -20,6 +20,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const email = String(body?.email ?? "").trim().toLowerCase();
+    const phone = String(body?.phone ?? "").trim();
     const userId = String(body?.userId ?? "").trim();
 
     if (!email || !email.includes("@")) {
@@ -32,30 +33,37 @@ serve(async (req) => {
     // Try to find existing client by email
     const { data: existing } = await supabase
       .from("app_clients")
-      .select("id, email")
+      .select("id, email, phone")
       .eq("email", email)
       .limit(1)
       .maybeSingle();
 
     let clientId = existing?.id as string | undefined;
+    let clientPhone = existing?.phone ?? phone;
 
     if (existing) {
-      // Update user_id if not set
-      if (userId) {
-        await supabase.from("app_clients").update({ user_id: userId }).eq("id", existing.id);
+      const updates: Record<string, unknown> = {};
+      if (userId) updates.user_id = userId;
+      if (phone && phone !== existing.phone) {
+        updates.phone = phone;
+        clientPhone = phone;
+      }
+      if (Object.keys(updates).length > 0) {
+        await supabase.from("app_clients").update(updates).eq("id", existing.id);
       }
     } else {
       // Create new client
       const { data: inserted, error } = await supabase
         .from("app_clients")
-        .insert({ email, phone: "", age: 0, gender: "", user_id: userId || null })
+        .insert({ email, phone, age: 0, gender: "", user_id: userId || null })
         .select("id")
         .single();
       if (error) throw error;
       clientId = inserted.id;
+      clientPhone = phone;
     }
 
-    return new Response(JSON.stringify({ id: clientId, email }), {
+    return new Response(JSON.stringify({ id: clientId, email, phone: clientPhone }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
