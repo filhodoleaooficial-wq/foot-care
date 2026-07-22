@@ -368,47 +368,6 @@ export type Database = {
           },
         ]
       }
-      quiz_questions: {
-        Row: {
-          id: string
-          app_id: string | null
-          question: string
-          options: Json
-          sort_order: number
-          is_published: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          app_id?: string | null
-          question: string
-          options?: Json
-          sort_order?: number
-          is_published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          app_id?: string | null
-          question?: string
-          options?: Json
-          sort_order?: number
-          is_published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_questions_app_id_fkey"
-            columns: ["app_id"]
-            isOneToOne: false
-            referencedRelation: "apps"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       products: {
         Row: {
           app_id: string
@@ -528,6 +487,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      quiz_questions: {
+        Row: {
+          app_id: string | null
+          created_at: string | null
+          id: string
+          is_published: boolean | null
+          options: Json | null
+          question: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          app_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          options?: Json | null
+          question: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          app_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          options?: Json | null
+          question?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_modules: {
         Row: {
