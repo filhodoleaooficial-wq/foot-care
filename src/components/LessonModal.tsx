@@ -99,7 +99,7 @@ const LessonModal = ({ open, onOpenChange, moduleId, userId, onLessonCreated, ex
       return (
         <div
           className="rounded-md border bg-background p-3 text-sm"
-          dangerouslySetInnerHTML={{ __html: contentText }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(contentText) }}
         />
       );
     }
