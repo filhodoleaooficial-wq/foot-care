@@ -175,6 +175,56 @@ export type Database = {
         }
         Relationships: []
       }
+      imc_records: {
+        Row: {
+          age: number | null
+          category: string
+          client_id: string
+          created_at: string
+          goal: string | null
+          height_cm: number
+          id: string
+          imc: number
+          meal_plan: string
+          sex: string | null
+          weight_kg: number
+        }
+        Insert: {
+          age?: number | null
+          category: string
+          client_id: string
+          created_at?: string
+          goal?: string | null
+          height_cm: number
+          id?: string
+          imc: number
+          meal_plan: string
+          sex?: string | null
+          weight_kg: number
+        }
+        Update: {
+          age?: number | null
+          category?: string
+          client_id?: string
+          created_at?: string
+          goal?: string | null
+          height_cm?: number
+          id?: string
+          imc?: number
+          meal_plan?: string
+          sex?: string | null
+          weight_kg?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imc_records_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "app_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_settings: {
         Row: {
           created_at: string | null
