@@ -6,7 +6,7 @@ import { getClientSession } from "@/lib/client-session";
 import { useAppConfig } from "@/contexts/AppConfigContext";
 import { toast } from "sonner";
 
-interface Record {
+interface IMCRecord {
   id: string;
   weight_kg: number;
   height_cm: number;
@@ -19,7 +19,7 @@ interface Record {
   created_at: string;
 }
 
-const CATEGORY_COLOR: Record<string, string> = {
+const CATEGORY_COLOR: Partial<globalThis.Record<string, string>> = {
   "Magreza grave": "#ef4444",
   "Magreza moderada": "#f97316",
   "Magreza leve": "#f59e0b",
@@ -44,8 +44,8 @@ const IMCPage = () => {
     restrictions: "",
   });
   const [loading, setLoading] = useState(false);
-  const [current, setCurrent] = useState<Record | null>(null);
-  const [history, setHistory] = useState<Record[]>([]);
+  const [current, setCurrent] = useState<IMCRecord | null>(null);
+  const [history, setHistory] = useState<IMCRecord[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
@@ -60,7 +60,7 @@ const IMCPage = () => {
       const { data } = await supabase.functions.invoke("imc-history", {
         body: { clientId: session.id },
       });
-      setHistory(((data as any)?.records || []) as Record[]);
+      setHistory(((data as any)?.records || []) as IMCRecord[]);
     } finally {
       setHistoryLoading(false);
     }
@@ -99,7 +99,7 @@ const IMCPage = () => {
       if (error) throw error;
       const payload = data as any;
       if (payload?.error) throw new Error(payload.error);
-      setCurrent(payload as Record);
+      setCurrent(payload as IMCRecord);
       toast.success("Plano gerado!");
       loadHistory();
     } catch (err: any) {
