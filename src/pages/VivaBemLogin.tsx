@@ -48,6 +48,11 @@ const VivaBemLogin = () => {
       toast({ title: "Digite seu e-mail", variant: "destructive" });
       return;
     }
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 10) {
+      toast({ title: "Digite seu celular com DDD", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const fullPhone = phone ? `+55${phone.replace(/\D/g, "")}` : "";
@@ -137,14 +142,14 @@ const VivaBemLogin = () => {
               </div>
             </div>
             <div>
-              <Label htmlFor="phone" className="text-sm font-medium">Celular (opcional)</Label>
+              <Label htmlFor="phone" className="text-sm font-medium">Celular *</Label>
               <div className="relative mt-1.5">
                 <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <span className="absolute left-9 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">+55</span>
                 <Input
                   id="phone" type="tel" placeholder="21988134920"
                   value={phone} onChange={(e) => setPhone(e.target.value)}
-                  className="pl-16"
+                  className="pl-16" required
                 />
               </div>
               <p className="mt-1.5 text-[11px] text-muted-foreground leading-snug">
