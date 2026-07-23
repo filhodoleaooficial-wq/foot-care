@@ -35,6 +35,7 @@ import StorePage from "./pages/StorePage";
 import BlogPage from "./pages/BlogPage";
 import ProfessionalsPage from "./pages/ProfessionalsPage";
 import ProfessionalRegisterPage from "./pages/ProfessionalRegisterPage";
+import IMCPage from "./pages/IMCPage";
 import NotFound from "./pages/NotFound";
 import ClientAppLayout from "./pages/client/ClientAppLayout";
 import ClientLogin from "./pages/client/ClientLogin";
@@ -76,6 +77,7 @@ const App = () => (
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/profissionais" element={<ProfessionalsPage />} />
               <Route path="/profissionais/cadastro" element={<ProfessionalRegisterPage />} />
+              <Route path="/imc" element={<IMCPage />} />
             </Route>
 
             {/* Dynamic client app routes (shareable link) */}
