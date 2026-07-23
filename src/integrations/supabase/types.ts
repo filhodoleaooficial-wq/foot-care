@@ -464,6 +464,60 @@ export type Database = {
           },
         ]
       }
+      professionals: {
+        Row: {
+          activity: string
+          address: string | null
+          bio: string | null
+          category: Database["public"]["Enums"]["professional_category"]
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          instagram: string | null
+          name: string
+          photo_url: string | null
+          state: string | null
+          updated_at: string
+          website: string | null
+          whatsapp: string
+        }
+        Insert: {
+          activity: string
+          address?: string | null
+          bio?: string | null
+          category: Database["public"]["Enums"]["professional_category"]
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          instagram?: string | null
+          name: string
+          photo_url?: string | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+          whatsapp: string
+        }
+        Update: {
+          activity?: string
+          address?: string | null
+          bio?: string | null
+          category?: Database["public"]["Enums"]["professional_category"]
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          instagram?: string | null
+          name?: string
+          photo_url?: string | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -670,7 +724,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      professional_category: "fisica" | "mental" | "espiritual"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -797,6 +851,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      professional_category: ["fisica", "mental", "espiritual"],
+    },
   },
 } as const

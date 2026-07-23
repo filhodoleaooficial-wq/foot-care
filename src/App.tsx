@@ -33,6 +33,8 @@ import SavedModulesPage from "./pages/SavedModulesPage";
 import SearchPage from "./pages/SearchPage";
 import StorePage from "./pages/StorePage";
 import BlogPage from "./pages/BlogPage";
+import ProfessionalsPage from "./pages/ProfessionalsPage";
+import ProfessionalRegisterPage from "./pages/ProfessionalRegisterPage";
 import NotFound from "./pages/NotFound";
 import ClientAppLayout from "./pages/client/ClientAppLayout";
 import ClientLogin from "./pages/client/ClientLogin";
@@ -72,6 +74,8 @@ const App = () => (
               <Route path="/pesquisar" element={<SearchPage />} />
               <Route path="/loja" element={<StorePage />} />
               <Route path="/blog" element={<BlogPage />} />
+              <Route path="/profissionais" element={<ProfessionalsPage />} />
+              <Route path="/profissionais/cadastro" element={<ProfessionalRegisterPage />} />
             </Route>
 
             {/* Dynamic client app routes (shareable link) */}

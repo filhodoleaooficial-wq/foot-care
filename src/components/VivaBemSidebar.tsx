@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen, LogOut, Menu, X } from "lucide-react";
+import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen, LogOut, Menu, X, HeartPulse, UserPlus } from "lucide-react";
 import { clearClientSession } from "@/lib/client-session";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppConfig } from "@/contexts/AppConfigContext";
@@ -11,6 +11,8 @@ const menuItems = [
   { icon: FileText, label: "Feed", path: "/feed" },
   { icon: ShoppingBag, label: "Loja", path: "/loja" },
   { icon: BookOpen, label: "Blog", path: "/blog" },
+  { icon: HeartPulse, label: "Profissionais", path: "/profissionais" },
+  { icon: UserPlus, label: "Seja profissional", path: "/profissionais/cadastro" },
   { icon: Star, label: "Módulos salvos", path: "/salvos" },
   { icon: Download, label: "Instalar App", path: "/instalar" },
   { icon: Search, label: "Pesquisar", path: "/pesquisar" },
