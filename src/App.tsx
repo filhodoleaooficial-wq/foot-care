@@ -35,6 +35,7 @@ import StorePage from "./pages/StorePage";
 import BlogPage from "./pages/BlogPage";
 import ProfessionalsPage from "./pages/ProfessionalsPage";
 import ProfessionalRegisterPage from "./pages/ProfessionalRegisterPage";
+import IMCPage from "./pages/IMCPage";
 import NotFound from "./pages/NotFound";
 import ClientAppLayout from "./pages/client/ClientAppLayout";
 import ClientLogin from "./pages/client/ClientLogin";
