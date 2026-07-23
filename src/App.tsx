@@ -77,6 +77,7 @@ const App = () => (
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/profissionais" element={<ProfessionalsPage />} />
               <Route path="/profissionais/cadastro" element={<ProfessionalRegisterPage />} />
+              <Route path="/imc" element={<IMCPage />} />
             </Route>
 
             {/* Dynamic client app routes (shareable link) */}
