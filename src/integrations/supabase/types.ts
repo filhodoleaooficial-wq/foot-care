@@ -384,12 +384,14 @@ export type Database = {
           name: string
           offer_type: string
           price: number | null
+          recurring: boolean
           redirect_to_sales: boolean
           release_type: string
           release_value: string | null
           sales_page_url: string | null
           section_id: string | null
           sort_order: number
+          stripe_price_id: string | null
           updated_at: string
           user_id: string
         }
@@ -408,12 +410,14 @@ export type Database = {
           name: string
           offer_type?: string
           price?: number | null
+          recurring?: boolean
           redirect_to_sales?: boolean
           release_type?: string
           release_value?: string | null
           sales_page_url?: string | null
           section_id?: string | null
           sort_order?: number
+          stripe_price_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -432,12 +436,14 @@ export type Database = {
           name?: string
           offer_type?: string
           price?: number | null
+          recurring?: boolean
           redirect_to_sales?: boolean
           release_type?: string
           release_value?: string | null
           sales_page_url?: string | null
           section_id?: string | null
           sort_order?: number
+          stripe_price_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -601,6 +607,57 @@ export type Database = {
             columns: ["app_id"]
             isOneToOne: false
             referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          client_id: string
+          created_at: string
+          current_period_end: string | null
+          id: string
+          product_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          product_id: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          product_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "app_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
