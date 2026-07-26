@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePremiumGate } from "@/hooks/usePremiumGate";
 import { useAppConfig } from "@/contexts/AppConfigContext";
+import { useAuth } from "@/contexts/AuthContext";
+
 
 const CATEGORIES = [
   { value: "fisica", label: "Saúde Física" },
@@ -16,7 +18,9 @@ const ProfessionalRegisterPage = () => {
   const navigate = useNavigate();
   const { loading: gateLoading, isPremium } = usePremiumGate();
   const { app } = useAppConfig();
+  const { user } = useAuth();
   const accent = app?.primary_color || "hsl(var(--vivabem-green))";
+
 
   const [submitting, setSubmitting] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -64,6 +68,10 @@ const ProfessionalRegisterPage = () => {
       toast.error("Preencha nome, atividade e WhatsApp.");
       return;
     }
+    if (!user) {
+      toast.error("Faça login para cadastrar-se como profissional.");
+      return;
+    }
     setSubmitting(true);
     try {
       let photoUrl: string | null = null;
@@ -82,8 +90,10 @@ const ProfessionalRegisterPage = () => {
         website: form.website.trim() || null,
         email: form.email.trim() || null,
         photo_url: photoUrl,
-      });
+        owner_user_id: user.id,
+      } as any);
       if (error) throw error;
+
       toast.success("Cadastro enviado! Você já aparece no diretório.");
       navigate("/profissionais");
     } catch (err: any) {
