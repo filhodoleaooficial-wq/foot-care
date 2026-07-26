@@ -18,7 +18,9 @@ const ProfessionalRegisterPage = () => {
   const navigate = useNavigate();
   const { loading: gateLoading, isPremium } = usePremiumGate();
   const { app } = useAppConfig();
+  const { user } = useAuth();
   const accent = app?.primary_color || "hsl(var(--vivabem-green))";
+
 
   const [submitting, setSubmitting] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
