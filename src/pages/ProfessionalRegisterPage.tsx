@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePremiumGate } from "@/hooks/usePremiumGate";
 import { useAppConfig } from "@/contexts/AppConfigContext";
+import { useAuth } from "@/contexts/AuthContext";
+
 
 const CATEGORIES = [
   { value: "fisica", label: "Saúde Física" },
