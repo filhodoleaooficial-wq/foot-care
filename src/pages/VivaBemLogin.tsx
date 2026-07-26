@@ -48,11 +48,6 @@ const VivaBemLogin = () => {
       toast({ title: "Digite seu e-mail", variant: "destructive" });
       return;
     }
-    const digits = phone.replace(/\D/g, "");
-    if (digits.length < 10) {
-      toast({ title: "Digite seu celular com DDD", variant: "destructive" });
-      return;
-    }
     setLoading(true);
     try {
       const fullPhone = phone ? `+55${phone.replace(/\D/g, "")}` : "";

@@ -25,3 +25,9 @@ dist-ssr
 
 # Deploy secrets
 deploy/.env
+
+# Sensitive / local misc files
+GHITHUB\ MAIS\ SUPABASE\ CRED.txt
+Sem\ título.png
+docs/migration-report-*.json
+*.local

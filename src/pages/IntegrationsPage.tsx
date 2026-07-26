@@ -31,13 +31,14 @@ const integrations: IntegrationDef[] = [
   {
     name: "Stripe",
     slug: "stripe",
-    description: "Pagamentos online com cartão de crédito, boleto e PIX",
+    description: "Cobrança recorrente e checkout dos seus apps",
     icon: CreditCard,
     color: "#635BFF",
     url: "https://stripe.com",
     fields: [
-      { key: "stripe_secret_key", label: "Chave Secreta (Secret Key)", placeholder: "sk_live_..." },
       { key: "stripe_publishable_key", label: "Chave Publicável (Publishable Key)", placeholder: "pk_live_..." },
+      { key: "stripe_secret_key", label: "Chave Secreta (Secret Key)", placeholder: "sk_live_..." },
+      { key: "stripe_webhook_secret", label: "Webhook Secret", placeholder: "whsec_..." },
     ],
   },
   {
