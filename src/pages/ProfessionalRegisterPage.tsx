@@ -68,6 +68,10 @@ const ProfessionalRegisterPage = () => {
       toast.error("Preencha nome, atividade e WhatsApp.");
       return;
     }
+    if (!user) {
+      toast.error("Faça login para cadastrar-se como profissional.");
+      return;
+    }
     setSubmitting(true);
     try {
       let photoUrl: string | null = null;
@@ -86,8 +90,10 @@ const ProfessionalRegisterPage = () => {
         website: form.website.trim() || null,
         email: form.email.trim() || null,
         photo_url: photoUrl,
-      });
+        owner_user_id: user.id,
+      } as any);
       if (error) throw error;
+
       toast.success("Cadastro enviado! Você já aparece no diretório.");
       navigate("/profissionais");
     } catch (err: any) {
