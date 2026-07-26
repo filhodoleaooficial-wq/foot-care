@@ -117,9 +117,9 @@ const LessonModal = ({ open, onOpenChange, moduleId, userId, onLessonCreated, ex
   const uploadFile = async (file: File) => {
     const ext = file.name.split(".").pop();
     const path = `${userId}/lessons/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("content-files").upload(path, file);
+    const { error } = await supabase.storage.from("app-assets").upload(path, file);
     if (error) throw error;
-    const { data } = supabase.storage.from("content-files").getPublicUrl(path);
+    const { data } = supabase.storage.from("app-assets").getPublicUrl(path);
     return data.publicUrl;
   };
 

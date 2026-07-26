@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
+import Hls from "hls.js";
 import { motion, AnimatePresence } from "framer-motion";
 import DOMPurify from "dompurify";
 import { getContentUrl } from "@/lib/content-url";
@@ -38,6 +39,40 @@ interface Lesson {
   duration_minutes: number | null;
 }
 
+const HlsPlayer = ({ src }: { src: string }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(videoRef.current);
+      return () => hls.destroy();
+    } else if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+      videoRef.current.src = src;
+    }
+  }, [src]);
+
+  return (
+    <div className="rounded-xl overflow-hidden bg-black aspect-video">
+      <video ref={videoRef} controls className="w-full h-full" />
+    </div>
+  );
+};
+
+const toEmbedUrl = (url: string): string => {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  return url;
+};
+
+const isEmbedUrl = (url: string) => {
+  return /youtube\.com|youtu\.be|vimeo\.com/.test(url);
+};
+
 const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null; text?: string | null }) => {
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
@@ -63,6 +98,16 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
   }
 
   if (type === "video" && resolvedUrl) {
+    if (isEmbedUrl(resolvedUrl)) {
+      return (
+        <div className="rounded-xl overflow-hidden bg-black aspect-video">
+          <iframe src={toEmbedUrl(resolvedUrl)} className="h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+        </div>
+      );
+    }
+    if (resolvedUrl.includes(".m3u8")) {
+      return <HlsPlayer src={resolvedUrl} />;
+    }
     return (
       <div className="rounded-xl overflow-hidden bg-black aspect-video">
         <video controls className="w-full h-full" src={resolvedUrl} />
@@ -224,10 +269,10 @@ const VivaBemProduct = () => {
     const fetch = async () => {
       setLoading(true);
 
-      // Access guard: if product has price > 0 or is in a premium section, require a paid purchase
+      // Access guard: if product has price > 0 or is in a premium section, require a paid purchase or active subscription
       const { data: prod } = await supabase
         .from("products")
-        .select("id, name, description, cover_url, section_id, price")
+        .select("id, name, description, cover_url, section_id, price, recurring")
         .eq("id", productId)
         .single();
 
@@ -250,6 +295,7 @@ const VivaBemProduct = () => {
         const client = getClientSession();
         let allowed = false;
         if (client) {
+          // Check one-time purchase first
           const { data: purch } = await supabase
             .from("product_purchases")
             .select("id")
@@ -258,6 +304,18 @@ const VivaBemProduct = () => {
             .eq("status", "paid")
             .maybeSingle();
           allowed = !!purch;
+
+          // If not purchased and product is recurring, check active subscription
+          if (!allowed && prod?.recurring) {
+            const { data: sub } = await supabase
+              .from("subscriptions")
+              .select("id")
+              .eq("client_id", client.id)
+              .eq("product_id", productId)
+              .in("status", ["active", "trialing"])
+              .maybeSingle();
+            allowed = !!sub;
+          }
         }
         if (!allowed) {
           navigate("/home");
@@ -272,17 +330,29 @@ const VivaBemProduct = () => {
       if (mRes.error) console.error("Modules fetch error:", mRes.error);
       setProduct(pRes.data);
       const mods = (mRes.data || []) as Module[];
-      setModules(mods);
+        setModules(mods);
+        console.log("[VivaBemProduct] product loaded:", pRes.data, "modules count:", mods.length);
 
       if (mods.length > 0) {
-        const { data: lData } = await supabase
+        const modIds = mods.map((m) => m.id);
+        const { data: lData, error: lError } = await supabase
           .from("lessons")
           .select("*")
-          .in("module_id", mods.map((m) => m.id))
+          .in("module_id", modIds)
           .eq("is_published", true)
           .order("sort_order");
+        console.log("[VivaBemProduct] mods:", mods);
+        console.log("[VivaBemProduct] lessons:", lData, "error:", lError);
+        console.log("[VivaBemProduct] modIds:", modIds);
+        console.log("[VivaBemProduct] lesson_module_ids:", (lData || []).map((l: any) => l.module_id));
+        console.log("[VivaBemProduct] match check:", JSON.stringify(mods.map((m: any) => ({
+          module: m.id,
+          title: m.title,
+          aulasEncontradas: (lData || []).filter((l: any) => l.module_id === m.id).length
+        }))));
         setLessons((lData || []) as Lesson[]);
-        setExpandedModule(mods[0].id);
+        const firstWithLessons = mods.find((m) => (lData || []).some((l: any) => l.module_id === m.id));
+        setExpandedModule(firstWithLessons?.id || mods[0]?.id);
       }
       setLoading(false);
     };
@@ -371,10 +441,10 @@ const VivaBemProduct = () => {
                 </div>
               </button>
               <AnimatePresence>
-                {isOpen && modLessons.length > 0 && (
+                {isOpen && (
                   <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
                     <div className="px-4 pb-4 space-y-2">
-                      {modLessons.map((lesson) => (
+                      {modLessons.length > 0 ? modLessons.map((lesson) => (
                         <button
                           key={lesson.id}
                           onClick={() => setActiveLesson(lesson)}
@@ -386,7 +456,9 @@ const VivaBemProduct = () => {
                           <span className="flex-1 text-left">{lesson.title}</span>
                           {lesson.duration_minutes && <span className="text-xs text-muted-foreground">{lesson.duration_minutes}min</span>}
                         </button>
-                      ))}
+                      )) : (
+                        <p className="text-xs text-muted-foreground text-center py-4">Nenhuma aula disponível</p>
+                      )}
                     </div>
                   </motion.div>
                 )}

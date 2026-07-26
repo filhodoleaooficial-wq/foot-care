@@ -1,0 +1,262 @@
+version: "3.8"
+
+# ====================================================================
+# Docker Compose - PéSaúde + Supabase Self-Hosted
+# ====================================================================
+# Uso:
+#   1. Copie .env.example para .env e preencha as variáveis
+#   2. Ajuste os domínios nos labels do Traefik
+#   3. docker network create traefik (se não existir)
+#   4. docker compose up -d
+# ====================================================================
+
+services:
+  # ==================== FRONTEND (PéSaúde) ====================
+  frontend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        VITE_SUPABASE_URL: https://${API_DOMAIN}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${ANON_KEY}
+        VITE_SUPABASE_PROJECT_ID: self-hosted
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`$${APP_DOMAIN:-app.seudominio.com}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+    networks:
+      - traefik
+      - internal
+    restart: unless-stopped
+
+  # ==================== SUPABASE DATABASE ====================
+  db:
+    image: supabase/postgres:15.1.0.165
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-supabase}
+      JWT_SECRET: ${JWT_SECRET}
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      DASHBOARD_USERNAME: ${DASHBOARD_USERNAME}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ==================== KONG API GATEWAY ====================
+  kong:
+    image: kong:2.8.1
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+    volumes:
+      - ./kong.yml:/etc/kong/kong.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`$${API_DOMAIN:-api.seudominio.com}`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+    networks:
+      - traefik
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==================== AUTH (GoTrue) ====================
+  auth:
+    image: supabase/gotrue:v2.160.0
+    environment:
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      GOTRUE_SITE_URL: https://${APP_DOMAIN}
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /recover
+      GOTRUE_DB_DRIVER: postgres
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-supabase}?sslmode=disable
+      GOTRUE_LOG_LEVEL: info
+      GOTRUE_OPERATOR_TOKEN: super-admin-token
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL:-}
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==================== POSTGREST (REST API) ====================
+  rest:
+    image: postgrest/postgrest:v12.0.1
+    environment:
+      PGRST_DB_URI: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-supabase}?sslmode=disable
+      PGRST_DB_SCHEMAS: public,storage,graphql_public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_DB_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_OPENAPI_SERVER_PROXY_URI: https://${API_DOMAIN}
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==================== REALTIME ====================
+  realtime:
+    image: supabase/realtime:v2.29.8
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-supabase}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_ENC_KEY: 8we6sHK1j3Ym9pD6wF6Gf6T5v3H4s5uN6b7x8pA9s0dF1gH2jK3lQ4w5e6r7t8y9u
+      JWT_SECRET: ${JWT_SECRET}
+      REPLICATION_MODE: stream
+      REPLICATION_SLOT: supabase_realtime_replication_slot
+      REPLICATION_PUBLICATION: supabase_realtime
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==================== STORAGE API ====================
+  storage:
+    image: supabase/storage-api:v1.8.3
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      TENANT_ID: default
+      REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+      GLOBAL_S3_BUCKET: ${GLOBAL_S3_BUCKET:-}
+      GLOBAL_S3_ENDPOINT: ${GLOBAL_S3_ENDPOINT:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+      FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-52428800}
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-file}
+      POSTGREST_URL: http://rest:3000
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-supabase}?sslmode=disable
+      PGOPTIONS: -c search_path=storage
+    volumes:
+      - storage-data:/var/lib/storage
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==================== POSTGRES META ====================
+  meta:
+    image: supabase/postgres-meta:v0.7.4
+    environment:
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: ${POSTGRES_DB:-supabase}
+      PG_META_DB_USER: ${POSTGRES_USER:-postgres}
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==================== EDGE FUNCTIONS ====================
+  functions:
+    image: supabase/edge-functions:v1.32.2
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      VERIFICATION_JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_VERIFICATION_KEY: ${INTERNAL_VERIFICATION_KEY:-dev_key}
+      INTERNAL_VERIFICATION_TOKEN: ${INTERNAL_VERIFICATION_TOKEN:-dev_token}
+      SUPABASE_URL: https://${API_DOMAIN}
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      SUPABASE_DB_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-supabase}?sslmode=disable
+      FUNCTIONS_PATH: /home/deno/functions
+      # Timeout em ms (5 min)
+      FUNCTIONS_REQUEST_TIMEOUT: 300000
+    volumes:
+      - ../supabase/functions:/home/deno/functions:ro
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==================== STUDIO (Admin UI) ====================
+  studio:
+    image: supabase/studio:v0.23.0
+    environment:
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DEFAULT_ORGANIZATION_NAME: PeSaude
+      DEFAULT_PROJECT_NAME: PeSaude
+      SUPABASE_URL: https://${API_DOMAIN}
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      SUPABASE_PUBLIC_URL: https://${API_DOMAIN}
+      LOGFLARE_API_KEY: ""
+      LOGFLARE_URL: ""
+      AUTH_ENDPOINT: /auth/v1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.studio.rule=Host(`$${STUDIO_DOMAIN:-studio.seudominio.com}`)"
+      - "traefik.http.routers.studio.entrypoints=websecure"
+      - "traefik.http.routers.studio.tls.certresolver=letsencrypt"
+      - "traefik.http.services.studio.loadbalancer.server.port=3000"
+    networks:
+      - traefik
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+# ==================== NETWORKS ====================
+networks:
+  traefik:
+    name: traefik
+    external: true
+  internal:
+    driver: bridge
+
+# ==================== VOLUMES ====================
+volumes:
+  db-data:
+  storage-data:

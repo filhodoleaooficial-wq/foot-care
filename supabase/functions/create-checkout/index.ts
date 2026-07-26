@@ -47,7 +47,7 @@ serve(async (req) => {
 
     const { data: product, error: prodErr } = await supabase
       .from("products")
-      .select("id, name, price")
+      .select("id, name, price, recurring, stripe_price_id")
       .eq("id", productId)
       .single();
     if (prodErr || !product) throw new Error("Produto não encontrado");
@@ -58,10 +58,46 @@ serve(async (req) => {
       .eq("id", clientId)
       .single();
 
-    const amountCents = product.price ? Math.round(Number(product.price) * 100) : DEFAULT_PRICE_CENTS;
-
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const origin = req.headers.get("origin") || "";
+
+    // Subscription checkout
+    if (product.recurring) {
+      if (!product.stripe_price_id) throw new Error("Produto recorrente sem ID de preço no Stripe. Configure no admin.");
+
+      const session = await stripe.checkout.sessions.create({
+        customer_email: client?.email || undefined,
+        line_items: [
+          {
+            price: product.stripe_price_id,
+            quantity: 1,
+          },
+        ],
+        mode: "subscription",
+        success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/payment-canceled`,
+        metadata: { product_id: productId, client_id: clientId },
+      });
+
+      await supabase.from("product_purchases").upsert(
+        {
+          client_id: clientId,
+          product_id: productId,
+          status: "pending",
+          amount: 0,
+          stripe_session_id: session.id,
+        },
+        { onConflict: "client_id,product_id" }
+      );
+
+      return new Response(JSON.stringify({ url: session.url, recurring: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // One-time checkout (existing behavior)
+    const amountCents = product.price ? Math.round(Number(product.price) * 100) : DEFAULT_PRICE_CENTS;
 
     const session = await stripe.checkout.sessions.create({
       customer_email: client?.email || undefined,

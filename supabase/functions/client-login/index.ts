@@ -72,7 +72,6 @@ serve(async (req) => {
         await supabase.from("app_clients").update(updates).eq("id", existing.id);
       }
     } else {
-      // Create new client
       const { data: inserted, error } = await supabase
         .from("app_clients")
         .insert({ email, phone, age: 0, gender: "", user_id: userId || null })

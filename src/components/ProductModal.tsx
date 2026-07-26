@@ -46,6 +46,8 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
   const [salesPageUrl, setSalesPageUrl] = useState(existingProduct?.sales_page_url || "");
   const [logoUnlockedUrl, setLogoUnlockedUrl] = useState<string | null>(existingProduct?.logo_unlocked_url || null);
   const [logoLockedUrl, setLogoLockedUrl] = useState<string | null>(existingProduct?.logo_locked_url || null);
+  const [recurring, setRecurring] = useState(existingProduct?.recurring || false);
+  const [stripePriceId, setStripePriceId] = useState(existingProduct?.stripe_price_id || "");
   const [coverUrl, setCoverUrl] = useState<string | null>(existingProduct?.cover_url || null);
   const [saving, setSaving] = useState(false);
   const [sections, setSections] = useState<{ id: string; title: string }[]>([]);
@@ -71,11 +73,15 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
       setSalesPageUrl(existingProduct.sales_page_url || "");
       setLogoUnlockedUrl(existingProduct.logo_unlocked_url || null);
       setLogoLockedUrl(existingProduct.logo_locked_url || null);
+      setRecurring(existingProduct.recurring || false);
+      setStripePriceId(existingProduct.stripe_price_id || "");
       setCoverUrl(existingProduct.cover_url || null);
     } else {
       setName("");
       setPrice("");
       setHiddenName(false);
+      setRecurring(false);
+      setStripePriceId("");
       setReleaseType("immediate");
       setReleaseValue("");
       setOfferType("main");
@@ -141,6 +147,8 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
         sales_page_url: salesPageUrl || null,
         logo_unlocked_url: logoUnlockedUrl,
         logo_locked_url: logoLockedUrl,
+        recurring: recurring,
+        stripe_price_id: stripePriceId || null,
         cover_url: coverUrl,
       };
 
@@ -191,6 +199,25 @@ const ProductModal = ({ open, onOpenChange, appId, userId, onProductCreated, exi
             />
             <p className="text-xs text-muted-foreground">Deixe vazio ou 0 para conteúdo gratuito.</p>
           </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="recurring">Produto Recorrente (Assinatura)</Label>
+            <Switch id="recurring" checked={recurring} onCheckedChange={setRecurring} />
+          </div>
+
+          {recurring && (
+            <div className="space-y-2">
+              <Label>ID do Preço no Stripe</Label>
+              <Input
+                value={stripePriceId}
+                onChange={(e) => setStripePriceId(e.target.value)}
+                placeholder="price_xxxxxxxxxxxxxx"
+              />
+              <p className="text-xs text-muted-foreground">
+                Crie um Produto + Preço recorrente no <a href="https://dashboard.stripe.com/products" target="_blank" className="underline" rel="noreferrer">Dashboard do Stripe</a> e cole o ID do preço aqui.
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <Label htmlFor="hidden-name">Ocultar nome no app?</Label>

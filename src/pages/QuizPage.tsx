@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Footprints, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { getClientSession } from "@/lib/client-session";
 import { Button } from "@/components/ui/button";
 
 interface Question {
@@ -38,6 +39,15 @@ const QuizPage = () => {
   const [finished, setFinished] = useState(false);
 
   useEffect(() => {
+    const session = getClientSession();
+    if (session) {
+      navigate("/home", { replace: true });
+      return;
+    }
+    if (localStorage.getItem("pesaude_quiz")) {
+      navigate("/login", { replace: true });
+      return;
+    }
     const fetchQuiz = async () => {
       const { data: app } = await supabase
         .from("apps")

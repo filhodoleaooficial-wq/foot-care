@@ -141,20 +141,26 @@ const VivaBemLogin = () => {
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor="phone" className="text-sm font-medium">Celular *</Label>
+
+            <div className="pt-2">
+              <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
+                Quer receber Bônus, Dicas e Novidades? informe o celular
+              </p>
               <div className="relative mt-1.5">
                 <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <span className="absolute left-9 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">+55</span>
-                <Input
-                  id="phone" type="tel" placeholder="21988134920"
-                  value={phone} onChange={(e) => setPhone(e.target.value)}
-                  className="pl-16" required
-                />
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                    +55
+                  </span>
+                  <Input
+                    id="phone" type="tel" placeholder="11 99999-9999"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                    className="rounded-l-none pl-3"
+                    maxLength={11}
+                  />
+                </div>
               </div>
-              <p className="mt-1.5 text-[11px] text-muted-foreground leading-snug">
-                Ao informar seu celular, você concorda em receber mensagens e novidades pelo WhatsApp.
-              </p>
             </div>
             <Button
               type="submit" disabled={loading}

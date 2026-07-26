@@ -1,0 +1,51 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+  - name: auth
+    url: http://auth:9999
+    routes:
+      - name: auth-all
+        paths:
+          - /auth
+        strip_path: true
+
+  - name: rest
+    url: http://rest:3000
+    routes:
+      - name: rest-all
+        paths:
+          - /rest
+        strip_path: true
+
+  - name: realtime
+    url: http://realtime:4000
+    routes:
+      - name: realtime-all
+        paths:
+          - /realtime
+        strip_path: true
+
+  - name: storage
+    url: http://storage:5000
+    routes:
+      - name: storage-all
+        paths:
+          - /storage
+        strip_path: true
+
+  - name: functions
+    url: http://functions:9000
+    routes:
+      - name: functions-all
+        paths:
+          - /functions
+        strip_path: true
+
+  - name: meta
+    url: http://meta:8080
+    routes:
+      - name: meta-all
+        paths:
+          - /pg
+        strip_path: true

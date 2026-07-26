@@ -22,6 +22,7 @@ interface Product {
   offer_type: string;
   section_id: string | null;
   price: number | null;
+  recurring?: boolean;
 }
 
 interface SectionRow {
@@ -130,7 +131,7 @@ const VivaBemHome = () => {
       const [prodRes, secRes, purchRes, bannerRes] = await Promise.all([
         supabase
           .from("products")
-          .select("id, name, description, cover_url, offer_type, section_id, price")
+          .select("id, name, description, cover_url, offer_type, section_id, price, recurring")
           .eq("app_id", app.id)
           .eq("is_published", true)
           .order("sort_order"),
@@ -314,11 +315,14 @@ const VivaBemHome = () => {
                   locked={isLocked}
                   onClick={() => {
                     if (isLocked) {
+                      const isRecurring = product.recurring === true;
                       const priceFormatted = product.price ? `R$ ${product.price.toFixed(2).replace(".", ",")}` : "R$ 27,90";
                       toast("Conteúdo bloqueado 🔒", {
-                        description: `Libere este curso por ${priceFormatted} (pagamento único).`,
+                        description: isRecurring
+                          ? `Assine por ${priceFormatted}/mês e tenha acesso a este e outros conteúdos.`
+                          : `Libere este curso por ${priceFormatted} (pagamento único).`,
                         action: {
-                          label: checkoutLoading ? "Aguarde..." : "Comprar agora",
+                          label: checkoutLoading ? "Aguarde..." : (isRecurring ? "Assinar agora" : "Comprar agora"),
                           onClick: () => handleProductCheckout(product.id),
                         },
                         duration: 6000,
