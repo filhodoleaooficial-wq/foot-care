@@ -156,24 +156,35 @@ export type Database = {
       }
       community_posts: {
         Row: {
+          app_id: string | null
           content: string
           created_at: string
           id: string
           user_id: string | null
         }
         Insert: {
+          app_id?: string | null
           content: string
           created_at?: string
           id?: string
           user_id?: string | null
         }
         Update: {
+          app_id?: string | null
           content?: string
           created_at?: string
           id?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       imc_records: {
         Row: {
@@ -526,6 +537,7 @@ export type Database = {
           id: string
           instagram: string | null
           name: string
+          owner_user_id: string | null
           photo_url: string | null
           state: string | null
           updated_at: string
@@ -543,6 +555,7 @@ export type Database = {
           id?: string
           instagram?: string | null
           name: string
+          owner_user_id?: string | null
           photo_url?: string | null
           state?: string | null
           updated_at?: string
@@ -560,6 +573,7 @@ export type Database = {
           id?: string
           instagram?: string | null
           name?: string
+          owner_user_id?: string | null
           photo_url?: string | null
           state?: string | null
           updated_at?: string
