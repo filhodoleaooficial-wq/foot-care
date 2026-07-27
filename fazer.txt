@@ -1,0 +1,21 @@
+Implementar uma validação automática das credenciais do destino (Project Ref, URL e Service Role Key) antes de rodar a migração, mostrando erros claros se algo estiver faltando.
+
+Adicionar um botão para eu baixar o inventário gerado por "Analisar origem" em JSON e CSV para auditoria.
+
+
+Criar um histórico e uma comparação (diff) entre duas execuções de "Analisar origem" para eu ver o que mudou desde a última análise.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
