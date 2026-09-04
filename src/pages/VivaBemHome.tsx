@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Lock, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Lock, BookOpen, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAppConfig } from "@/contexts/AppConfigContext";
 import { getClientSession } from "@/lib/client-session";
@@ -39,6 +39,75 @@ const CardSection = ({ title, children }: { title: string; children: React.React
     <div className="flex gap-4 overflow-x-auto px-6 pb-4 scrollbar-hide">{children}</div>
   </section>
 );
+
+// Purchase modal
+const PurchaseModal = ({
+  open,
+  product,
+  loading,
+  onClose,
+  onBuy,
+}: {
+  open: boolean;
+  product: Product | null;
+  loading: boolean;
+  onClose: () => void;
+  onBuy: () => void;
+}) => {
+  if (!product) return null;
+  const isRecurring = product.recurring === true;
+  const priceFormatted = product.price ? `R$ ${product.price.toFixed(2).replace(".", ",")}` : "R$ 27,90";
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center sm:p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 60, opacity: 0 }}
+            transition={{ type: "spring", damping: 26, stiffness: 300 }}
+            className="w-full sm:max-w-sm bg-background rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10 h-1 rounded-full bg-muted" />
+              <button onClick={onClose} className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="text-center mb-5">
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center mb-3">
+                <Lock className="h-5 w-5 text-yellow-600" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">{product.name}</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isRecurring
+                  ? `Acesso completo por ${priceFormatted}/mês`
+                  : `Libere este conteúdo por ${priceFormatted} (pagamento único)`}
+              </p>
+            </div>
+            <button
+              onClick={onBuy}
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-base shadow-lg disabled:opacity-50 transition-opacity"
+            >
+              {loading ? "Aguarde..." : isRecurring ? `Assinar por ${priceFormatted}/mês` : `Comprar por ${priceFormatted}`}
+            </button>
+            <p className="text-[11px] text-muted-foreground text-center mt-3">
+              Você será redirecionado para o pagamento seguro do Stripe.
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 // Content card
 const ContentCard = ({
@@ -98,6 +167,7 @@ const VivaBemHome = () => {
   const [dbSections, setDbSections] = useState<SectionRow[]>([]);
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [purchaseProduct, setPurchaseProduct] = useState<Product | null>(null);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [currentBanner, setCurrentBanner] = useState(0);
   const bannerTimerRef = useRef<ReturnType<typeof setInterval>>();
@@ -111,13 +181,14 @@ const VivaBemHome = () => {
     setCheckoutLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { productId, clientId: client.id },
+        body: { productId, clientId: client.id, baseUrl: window.location.origin },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast.error("Não foi possível abrir o checkout. Tente novamente em instantes.");
+      const msg = err?.message || "Erro desconhecido";
+      toast.error(msg, { duration: 6000 });
       console.error("Checkout error:", err);
     } finally {
       setCheckoutLoading(false);
@@ -315,18 +386,7 @@ const VivaBemHome = () => {
                   locked={isLocked}
                   onClick={() => {
                     if (isLocked) {
-                      const isRecurring = product.recurring === true;
-                      const priceFormatted = product.price ? `R$ ${product.price.toFixed(2).replace(".", ",")}` : "R$ 27,90";
-                      toast("Conteúdo bloqueado 🔒", {
-                        description: isRecurring
-                          ? `Assine por ${priceFormatted}/mês e tenha acesso a este e outros conteúdos.`
-                          : `Libere este curso por ${priceFormatted} (pagamento único).`,
-                        action: {
-                          label: checkoutLoading ? "Aguarde..." : (isRecurring ? "Assinar agora" : "Comprar agora"),
-                          onClick: () => handleProductCheckout(product.id),
-                        },
-                        duration: 6000,
-                      });
+                      setPurchaseProduct(product);
                     } else {
                       navigate(`/produto/${product.id}`);
                     }
@@ -342,6 +402,16 @@ const VivaBemHome = () => {
           <p className="text-muted-foreground text-sm">Em breve, novos conteúdos estarão disponíveis aqui.</p>
         </div>
       )}
+
+      <PurchaseModal
+        open={purchaseProduct !== null}
+        product={purchaseProduct}
+        loading={checkoutLoading}
+        onClose={() => setPurchaseProduct(null)}
+        onBuy={() => {
+          if (purchaseProduct) handleProductCheckout(purchaseProduct.id);
+        }}
+      />
     </div>
   );
 };

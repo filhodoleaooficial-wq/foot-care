@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Play, FileText, Music, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import Hls from "hls.js";
 import { motion, AnimatePresence } from "framer-motion";
 import DOMPurify from "dompurify";
@@ -106,11 +106,25 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
       );
     }
     if (resolvedUrl.includes(".m3u8")) {
-      return <HlsPlayer src={resolvedUrl} />;
+      return (
+        <div>
+          <HlsPlayer src={resolvedUrl} />
+          <a href={resolvedUrl} download className="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
+            <Download className="h-3.5 w-3.5" /> Baixar vídeo
+          </a>
+        </div>
+      );
     }
     return (
-      <div className="rounded-xl overflow-hidden bg-black aspect-video">
-        <video controls className="w-full h-full" src={resolvedUrl} />
+      <div>
+        <div className="rounded-xl overflow-hidden bg-black aspect-video">
+          <video controls className="w-full h-full" src={resolvedUrl} />
+        </div>
+        <div className="mt-2 flex justify-center">
+          <a href={resolvedUrl} download className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline">
+            <Download className="h-4 w-4" /> Baixar vídeo
+          </a>
+        </div>
       </div>
     );
   }
@@ -121,9 +135,16 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
 
   if (type === "audio" && resolvedUrl) {
     return (
-      <div className="rounded-xl bg-card border border-border p-4 flex items-center gap-3">
-        <Music className="h-6 w-6 text-primary flex-shrink-0" />
-        <audio controls className="w-full" src={resolvedUrl} />
+      <div>
+        <div className="rounded-xl bg-card border border-border p-4 flex items-center gap-3">
+          <Music className="h-6 w-6 text-primary flex-shrink-0" />
+          <audio controls className="w-full" src={resolvedUrl} />
+        </div>
+        <div className="mt-2 flex justify-center">
+          <a href={resolvedUrl} download className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline">
+            <Download className="h-4 w-4" /> Baixar áudio
+          </a>
+        </div>
       </div>
     );
   }
@@ -136,9 +157,14 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
 
   if (resolvedUrl) {
     return (
-      <a href={resolvedUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary underline">
-        <FileText className="h-4 w-4" /> Abrir arquivo
-      </a>
+      <div className="flex flex-col items-center gap-3">
+        <a href={resolvedUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary underline">
+          <FileText className="h-4 w-4" /> Abrir arquivo
+        </a>
+        <a href={resolvedUrl} download className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline">
+          <Download className="h-4 w-4" /> Baixar
+        </a>
+      </div>
     );
   }
 
@@ -169,10 +195,9 @@ const PdfViewer = ({ url }: { url: string }) => {
       <div className="rounded-xl border border-border bg-card p-8 flex flex-col items-center gap-4">
         <FileText className="h-12 w-12 text-muted-foreground/40" />
         <p className="text-sm text-muted-foreground text-center">Não foi possível renderizar o PDF.</p>
-        <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg">
-          <FileText className="h-5 w-5" /> Abrir PDF externo
+        <a href={url} download className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-lg">
+          <Download className="h-5 w-5" /> Baixar PDF
         </a>
-        <a href={url} download className="text-xs text-muted-foreground underline">Baixar arquivo</a>
       </div>
     );
   }
@@ -221,27 +246,32 @@ const PdfViewer = ({ url }: { url: string }) => {
             +
           </button>
         </div>
-        {numPages && numPages > 1 && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
-              disabled={pageNumber <= 1}
-              className="h-7 w-7 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </button>
-            <span className="text-xs text-muted-foreground min-w-[4rem] text-center">
-              {pageNumber} / {numPages}
-            </span>
-            <button
-              onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
-              disabled={pageNumber >= numPages}
-              className="h-7 w-7 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {numPages && numPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
+                disabled={pageNumber <= 1}
+                className="h-7 w-7 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <span className="text-xs text-muted-foreground min-w-[4rem] text-center">
+                {pageNumber} / {numPages}
+              </span>
+              <button
+                onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
+                disabled={pageNumber >= numPages}
+                className="h-7 w-7 rounded-full bg-muted flex items-center justify-center disabled:opacity-30"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          <a href={url} download className="h-8 w-8 rounded-md bg-muted flex items-center justify-center hover:bg-primary/10 transition-colors" title="Baixar PDF">
+            <Download className="h-4 w-4" />
+          </a>
+        </div>
       </div>
     </div>
   );

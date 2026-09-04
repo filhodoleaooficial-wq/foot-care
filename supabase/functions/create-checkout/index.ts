@@ -59,7 +59,11 @@ serve(async (req) => {
       .single();
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const origin = req.headers.get("origin") || "";
+    const origin =
+      String(body?.baseUrl ?? "") ||
+      req.headers.get("origin") ||
+      req.headers.get("referer")?.replace(/\/$/, "") ||
+      "";
 
     // Subscription checkout
     if (product.recurring) {

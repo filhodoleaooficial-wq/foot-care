@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,13 +18,22 @@ interface ModuleModalProps {
 }
 
 const ModuleModal = ({ open, onOpenChange, productId, userId, onModuleCreated, existingModule }: ModuleModalProps) => {
-  const [title, setTitle] = useState(existingModule?.title || "");
-  const [description, setDescription] = useState(existingModule?.description || "");
-  const [sortOrder, setSortOrder] = useState(existingModule?.sort_order?.toString() || "0");
-  const [coverUrl, setCoverUrl] = useState<string | null>(existingModule?.cover_url || null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [sortOrder, setSortOrder] = useState("0");
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const coverRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (open) {
+      setTitle(existingModule?.title || "");
+      setDescription(existingModule?.description || "");
+      setSortOrder(existingModule?.sort_order?.toString() || "0");
+      setCoverUrl(existingModule?.cover_url || null);
+    }
+  }, [open, existingModule]);
 
   const uploadCover = async (file: File) => {
     const ext = file.name.split(".").pop();
