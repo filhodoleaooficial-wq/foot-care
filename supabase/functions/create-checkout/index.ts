@@ -10,6 +10,10 @@ const corsHeaders = {
 const DEFAULT_PRICE_CENTS = 2790; // R$ 27,90
 
 async function getStripeKey(supabase: ReturnType<typeof createClient>): Promise<string> {
+  // Env/secret wins: guarantees the operator controls the mode (test x live) directly.
+  const envKey = Deno.env.get("STRIPE_SECRET_KEY");
+  if (envKey) return envKey;
+
   const { data } = await supabase
     .from("integration_settings")
     .select("credentials, is_active")
@@ -19,9 +23,6 @@ async function getStripeKey(supabase: ReturnType<typeof createClient>): Promise<
   if (data?.is_active && data.credentials?.stripe_secret_key) {
     return data.credentials.stripe_secret_key;
   }
-
-  const envKey = Deno.env.get("STRIPE_SECRET_KEY");
-  if (envKey) return envKey;
 
   throw new Error("Chave secreta do Stripe não configurada. Acesse Integrações no painel para configurar.");
 }
@@ -68,6 +69,8 @@ serve(async (req) => {
     // Subscription checkout
     if (product.recurring) {
       if (!product.stripe_price_id) throw new Error("Produto recorrente sem ID de preço no Stripe. Configure no admin.");
+      if (product.stripe_price_id.startsWith("prod_"))
+        throw new Error('ID inválido: "' + product.stripe_price_id + '" é um ID de PRODUTO. No admin use o ID do PREÇO (começa com price_).');
 
       const session = await stripe.checkout.sessions.create({
         customer_email: client?.email || undefined,

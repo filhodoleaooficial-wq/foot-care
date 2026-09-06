@@ -187,8 +187,12 @@ const VivaBemHome = () => {
       if (data?.error) throw new Error(data.error);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      const msg = err?.message || "Erro desconhecido";
-      toast.error(msg, { duration: 6000 });
+      let msg = err?.message || "Erro desconhecido";
+      try {
+        const body = await err?.context?.json?.();
+        if (body?.error) msg = typeof body.error === "string" ? body.error : JSON.stringify(body.error);
+      } catch {}
+      toast.error(msg, { duration: 8000 });
       console.error("Checkout error:", err);
     } finally {
       setCheckoutLoading(false);

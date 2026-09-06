@@ -36,9 +36,10 @@ export async function getContentUrl(url: string | null | undefined): Promise<str
       body: { path },
     });
     if (error) throw error;
-    return data?.signedUrl || null;
+    if (data?.signedUrl) return data.signedUrl;
+    return url;
   } catch {
     console.error("Failed to get signed URL for:", path);
-    return null;
+    return url;
   }
 }

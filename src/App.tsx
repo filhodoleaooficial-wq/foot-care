@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ClientProtectedRoute from "@/components/ClientProtectedRoute";
 import QuizPage from "./pages/QuizPage";
 import VivaBemLogin from "./pages/VivaBemLogin";
+import VivaBemRegister from "./pages/VivaBemRegister";
 import VivaBemLayout from "./pages/VivaBemLayout";
 import VivaBemHome from "./pages/VivaBemHome";
 import VivaBemProduct from "./pages/VivaBemProduct";
@@ -59,6 +60,7 @@ const App = () => (
 
             {/* Client login */}
             <Route path="/login" element={<VivaBemLogin />} />
+            <Route path="/register" element={<VivaBemRegister />} />
 
             {/* Payment result pages */}
             <Route path="/payment-success" element={<PaymentSuccess />} />

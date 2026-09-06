@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { syncClientSession } from "@/lib/client-auth";
+import { setClientSession } from "@/lib/client-session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { BookOpen, Mail, Phone } from "lucide-react";
-import { setClientSession } from "@/lib/client-session";
+import { BookOpen, Lock, Mail, Phone, UserPlus } from "lucide-react";
 
 interface AppConfig {
   id: string;
@@ -18,10 +19,14 @@ interface AppConfig {
   welcome_text: string;
 }
 
+type Mode = "password" | "simple";
+
 const VivaBemLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [app, setApp] = useState<AppConfig | null>(null);
@@ -42,7 +47,42 @@ const VivaBemLogin = () => {
     fetchApp();
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({ title: "Digite seu e-mail", variant: "destructive" });
+      return;
+    }
+    if (!password) {
+      toast({ title: "Digite sua senha", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (error) throw error;
+      if (!data.user) throw new Error("Login não realizado.");
+      await syncClientSession(data.user);
+      toast({ title: `Bem-vindo ao ${app?.name || "App"}!` });
+      navigate("/home");
+    } catch (err: any) {
+      toast({
+        title: "Erro",
+        description:
+          err?.message?.toLowerCase().includes("invalid login credentials")
+            ? "E-mail ou senha incorretos. Verifique seus dados ou crie uma conta."
+            : err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSimpleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
       toast({ title: "Digite seu e-mail", variant: "destructive" });
@@ -52,7 +92,7 @@ const VivaBemLogin = () => {
     try {
       const fullPhone = phone ? `+55${phone.replace(/\D/g, "")}` : "";
       const { data: clientData, error: clientError } = await supabase.functions.invoke("client-login", {
-        body: { email, phone: fullPhone },
+        body: { email: email.trim().toLowerCase(), phone: fullPhone },
       });
       if (clientError) throw clientError;
       if (clientData?.error) throw new Error(clientData.error);
@@ -60,7 +100,7 @@ const VivaBemLogin = () => {
 
       setClientSession({
         id: clientData.id,
-        email,
+        email: email.trim().toLowerCase(),
         phone: fullPhone,
       });
       toast({ title: `Bem-vindo ao ${app?.name || "App"}!` });
@@ -124,47 +164,111 @@ const VivaBemLogin = () => {
           <h2 className="text-lg font-semibold text-foreground mb-6 text-center">
             Acesse o app
           </h2>
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium">E-mail</Label>
-              <div className="relative mt-1.5">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="email" type="email" placeholder="seu@email.com"
-                  value={email} onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10" required
-                />
-              </div>
-            </div>
 
-            <div className="pt-2">
-              <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
-                Quer receber Bônus, Dicas e Novidades? informe o celular
-              </p>
-              <div className="relative mt-1.5">
-                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <div className="flex">
-                  <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-input bg-muted text-sm text-muted-foreground">
-                    +55
-                  </span>
+          <div className="flex rounded-xl bg-muted p-1 mb-6">
+            <button
+              onClick={() => setMode("password")}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                mode === "password" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              E-mail + senha
+            </button>
+            <button
+              onClick={() => setMode("simple")}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                mode === "simple" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              E-mail simples
+            </button>
+          </div>
+
+          {mode === "password" ? (
+            <form onSubmit={handlePasswordLogin} className="space-y-5">
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium">E-mail</Label>
+                <div className="relative mt-1.5">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    id="phone" type="tel" placeholder="11 99999-9999"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
-                    className="rounded-l-none pl-3"
-                    maxLength={11}
+                    id="email" type="email" placeholder="seu@email.com"
+                    value={email} onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10" required
                   />
                 </div>
               </div>
-            </div>
-            <Button
-              type="submit" disabled={loading}
-              className="w-full font-bold text-base py-6 rounded-xl text-white shadow-lg"
-              style={{ backgroundColor: accentColor }}
+              <div>
+                <Label htmlFor="password" className="text-sm font-medium">Senha</Label>
+                <div className="relative mt-1.5">
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="password" type="password" placeholder="Sua senha"
+                    value={password} onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10" required
+                  />
+                </div>
+              </div>
+              <Button
+                type="submit" disabled={loading}
+                className="w-full font-bold text-base py-6 rounded-xl text-white shadow-lg"
+                style={{ backgroundColor: accentColor }}
+              >
+                {loading ? "Entrando..." : "Entrar"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleSimpleLogin} className="space-y-5">
+              <div>
+                <Label htmlFor="email-simple" className="text-sm font-medium">E-mail</Label>
+                <div className="relative mt-1.5">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="email-simple" type="email" placeholder="seu@email.com"
+                    value={email} onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10" required
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
+                  Quer receber Bônus, Dicas e Novidades? informe o celular
+                </p>
+                <div className="relative mt-1.5">
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-input bg-muted text-sm text-muted-foreground">
+                      +55
+                    </span>
+                    <Input
+                      id="phone" type="tel" placeholder="11 99999-9999"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                      className="rounded-l-none pl-3"
+                      maxLength={11}
+                    />
+                  </div>
+                </div>
+              </div>
+              <Button
+                type="submit" disabled={loading}
+                className="w-full font-bold text-base py-6 rounded-xl text-white shadow-lg"
+                style={{ backgroundColor: accentColor }}
+              >
+                {loading ? "Entrando..." : "Entrar"}
+              </Button>
+            </form>
+          )}
+
+          <div className="mt-6 pt-5 border-t border-border text-center">
+            <button
+              onClick={() => navigate("/register")}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold"
+              style={{ color: accentColor }}
             >
-              {loading ? "Entrando..." : "Entrar"}
-            </Button>
-          </form>
+              <UserPlus className="h-4 w-4" />
+              Criar conta
+            </button>
+          </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
