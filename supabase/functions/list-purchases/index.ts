@@ -32,17 +32,20 @@ serve(async (req) => {
     const candidates = new Set<string>();
     if (clientId) candidates.add(clientId);
 
-    const emailOrUserRes = await supabase
-      .from("app_clients")
-      .select("id")
-      .or(email && userId
-        ? `email.eq.${email},user_id.eq.${userId}`
-        : email
-          ? `email.eq.${email}`
-          : `user_id.eq.${userId}`)
-      .limit(50);
-    if (emailOrUserRes.error) throw emailOrUserRes.error;
-    for (const row of emailOrUserRes.data ?? []) candidates.add(row.id);
+    if (email || userId) {
+      let filter = "";
+      if (email && userId) filter = `email.eq.${email},user_id.eq.${userId}`;
+      else if (email) filter = `email.eq.${email}`;
+      else filter = `user_id.eq.${userId}`;
+
+      const emailOrUserRes = await supabase
+        .from("app_clients")
+        .select("id")
+        .or(filter)
+        .limit(50);
+      if (emailOrUserRes.error) throw emailOrUserRes.error;
+      for (const row of emailOrUserRes.data ?? []) candidates.add(row.id);
+    }
 
     const ids = Array.from(candidates);
     if (ids.length === 0) throw new Error("Nenhum cliente encontrado");
