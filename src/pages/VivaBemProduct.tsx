@@ -97,21 +97,22 @@ const ContentPlayer = ({ type, url, text }: { type: string; url?: string | null;
     return null;
   }
 
+  if ((type === "video" || type === "vturb" || (resolvedUrl && (resolvedUrl.includes(".m3u8") || resolvedUrl.includes(".mpd")))) && resolvedUrl) {
+    return (
+      <div>
+        <HlsPlayer src={resolvedUrl} />
+        <a href={resolvedUrl} download className="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
+          <Download className="h-3.5 w-3.5" /> Baixar vídeo
+        </a>
+      </div>
+    );
+  }
+
   if (type === "video" && resolvedUrl) {
     if (isEmbedUrl(resolvedUrl)) {
       return (
         <div className="rounded-xl overflow-hidden bg-black aspect-video">
           <iframe src={toEmbedUrl(resolvedUrl)} className="h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-        </div>
-      );
-    }
-    if (resolvedUrl.includes(".m3u8")) {
-      return (
-        <div>
-          <HlsPlayer src={resolvedUrl} />
-          <a href={resolvedUrl} download className="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
-            <Download className="h-3.5 w-3.5" /> Baixar vídeo
-          </a>
         </div>
       );
     }
