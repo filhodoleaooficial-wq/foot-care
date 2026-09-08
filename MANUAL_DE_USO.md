@@ -70,11 +70,13 @@ Na lateral (menu) você tem:
 3. As chaves ficam assim (o sistema usa a **Secret no ambiente do Supabase** com prioridade):
    - No projeto Supabase: `supabase secrets set STRIPE_SECRET_KEY=sk_...`
    - A chave **Publicável** e o **Webhook Secret** também podem ser salvos em **Integrações → Stripe** no painel
-4. **Webhook** (avisos de pagamento): crie um endpoint no Stripe apontando para:
-   `https://SEU-PROJETO.supabase.co/functions/v1/stripe-webhook`
-   - Ele entrega eventos novos, bloqueia conteúdo desbloqueado etc.
+4. **Webhook** (avisos de pagamento) — **já configurado em modo teste**:
+   - Endpoint: `https://ygimcsqxykbyrtnpygss.supabase.co/functions/v1/stripe-webhook`
+   - Eventos: `checkout.session.completed`, `invoice.payment_succeeded`, `customer.subscription.updated`, `customer.subscription.deleted`
+   - Segredo salvo como `STRIPE_WEBHOOK_SECRET` no ambiente do Supabase (ver em Gramado Desenvolvedores → Webhooks → "Enviar teste" para conferir as entregas)
+   - Para testar o envio, no dashboard do Stripe: **Desenvolvedores → Webhooks → seu endpoint → "Enviar teste de evento"**
 
-> **Atenção (go-live):** para começar a vender de verdade, troque a `STRIPE_SECRET_KEY` de `sk_test_...` para `sk_live_...` e use **preços ao vivo** (`price_live_...`). Cartões de teste (`4242 4242 4242 4242`) só funcionam em modo teste.
+> **Atenção (go-live):** para começar a vender de verdade, troque a `STRIPE_SECRET_KEY` de `sk_test_...` para `sk_live_...`, use **preços ao vivo** (`price_live_...`) e crie um **novo endpoint de webhook no modo Live**, atualizando `STRIPE_WEBHOOK_SECRET` com o segredo novo (ex.: `supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_live_...`). Cartões de teste (`4242 4242 4242 4242`) só funcionam em modo teste.
 
 ## A.5 Criar módulos e aulas (o conteúdo)
 
