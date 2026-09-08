@@ -88,6 +88,18 @@ serve(async (req) => {
             },
             { onConflict: "client_id,product_id" }
           );
+        } else if (session.mode === "payment" && productId && clientId) {
+          // One-time purchase
+          await supabase.from("product_purchases").upsert(
+            {
+              client_id: clientId,
+              product_id: productId,
+              status: "paid",
+              amount: session.amount_total ? session.amount_total / 100 : 0,
+              stripe_session_id: session.id,
+            },
+            { onConflict: "client_id,product_id" }
+          );
         }
         break;
       }
