@@ -80,11 +80,13 @@ Na lateral (menu) você tem:
 
 1. Em **Produtos**, clique no produto e depois em **"Módulos"**
 2. Crie um **módulo** (ex.: "Módulo 1 — Introdução")
-3. Dentro do módulo, adicione **aulas** com o conteúdo:
+3. O conteúdo pode ficar **no módulo** (ex.: PDF direto) ou **dentro das aulas**:
    - **Vídeo** (MP4 ou HLS `.m3u8`) → o aluno assiste **e pode baixar** no player
+   - **Vídeo hospedado** com tipo `vturb` (ex.: link do Gumlet, `.m3u8`) → também toca e baixa no player
    - **Áudio** → o aluno ouve **e pode baixar**
    - **PDF / arquivo** → o aluno abre **e pode baixar** (botão "Baixar PDF")
 4. Organize a ordem de exibição; quando o aluno comprar o produto, as aulas são liberadas com **download habilitado**
+5. **Importante — arquivos no servidor:** ao salvar, o conteúdo é enviado ao storage do Supabase e o link é gravado. Se depois o arquivo for apagado/estiver quebrado, o aluno vê "Não foi possível renderizar o PDF" e o download dá `Object not found (NoSuchKey)`. Nesse caso **reenvie o arquivo** (editar módulo/aula → anexar de novo → salvar) para gerar um novo link válido.
 
 ## A.6 Seções e Banners
 
@@ -121,6 +123,16 @@ Na lateral (menu) você tem:
 2. **Permissão para listar clientes (RLS)** — painel → **SQL Editor**:
    - Copie todo o conteúdo do arquivo `supabase/migrations/20260728180620_allow_app_owners_view_all_clients.sql` e rode o SQL
 3. **ReCAPTCHA** (opcional): exige chaves próprias do Google e configurá-las na seção **Auth** do Supabase
+
+## A.11 Problemas comuns (administrador)
+
+| Problema | Causa | Solução |
+|---|---|---|
+| O produto / aula aparece **"Este conteúdo será disponibilizado em breve"** | Módulos (e aulas) com `is_published = false` (Rascunho) | Abra o produto → **Módulos** → clique no **ícone de olho** para publicar módulos e aulas |
+| Produto sem cadeado para o aluno, mas manda de volta para a Home | Antigo: leitura da compra direto pelo navegador (bloqueado por RLS) | Já corrigido: a verificação usa a função `list-purchases` (chave de serviço). Se ainda ocorrer, **republicar o site** (Lovable) para o app pegar o código novo |
+| Download de PDF → `"Object not found" / NoSuchKey (404)` | O arquivo não existe mais no storage | **Reenviar o arquivo** no módulo/aula (editar → anexar → salvar) para gerar novo link |
+| PDF não renderiza (aluno vê "Não foi possível renderizar o PDF") | Arquivo quebrado/faltando no storage | Mesma solução: reenviar o arquivo |
+| Vídeo não toca | Aula criada com tipo não reconhecido (ex.: `vturb`) ou link quebrado | Tipos `vturb`/`.m3u8` já são reconhecidos (republicar o site). Confirme o link do vídeo e, se preciso, reinsira-o |
 
 ---
 
@@ -179,7 +191,7 @@ Na lateral (menu) você tem:
 2. Veja a lista de **módulos e aulas**
 3. Ao abrir uma aula:
    - **Vídeo (MP4)** → player com botão de **download**
-   - **Vídeo (HLS .m3u8)** → player com **download** do arquivo de mídia
+   - **Vídeo (HLS .m3u8 / vturb)** → player com **download** do arquivo de mídia
    - **Áudio** → player com **download**
    - **PDF** → visualiza na tela, com botão **"Baixar PDF"** (e ícone de download no canto)
 
@@ -213,7 +225,10 @@ Pela barra inferior o aluno acessa:
 | Não recebeu o e-mail de verificação | Cheque spam/promoções; use "Reenviar e-mail de verificação" |
 | Link do e-mail não funciona / volta para a home | Peça ao admin para conferir **URL Configuration** no Supabase (item A.10) |
 | Erro ao pagar | Confirme os dados do cartão; em teste, o site precisa estar em **modo teste** |
+| Comprei, o produto deixou de ter cadeado, mas ao abrir vai de volta para a Home | Antes corrigido, pode ser cache/republicação pendente — **atualize a página**; se persistir, peça ao admin para republicar o site (item A.11) |
 | Aula/PDF não abre depois do pagamento | Recarregue a página; se persistir, reporte o texto do erro (F12 → Console) ao admin |
+| PDF dá "Não foi possível renderizar o PDF" ou download com `NoSuchKey` (404) | O arquivo não existe mais no servidor — o admin deve **reenviar o arquivo** no módulo/aula (item A.11) |
+| Vídeo não toca | Confirme que o produto foi comprado e atualize a página; se persistir, o admin verifica o link/tipo do vídeo (`vturb`/`.m3u8`) |
 | Não consigo baixar uma aula | Verifique se o produto foi comprado (download é liberado após compra) |
 
 ---
