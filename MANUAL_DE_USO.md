@@ -122,7 +122,9 @@ Na lateral (menu) você tem:
    - Em **URL Configuration**, preencha **Site URL** e **Redirect URLs** com o endereço do seu site publicado (ex.: `https://seusite.lovable.app`) — senão o link de confirmação do e-mail pode falhar
 2. **Permissão para listar clientes (RLS)** — painel → **SQL Editor**:
    - Copie todo o conteúdo do arquivo `supabase/migrations/20260728180620_allow_app_owners_view_all_clients.sql` e rode o SQL
-3. **ReCAPTCHA** (opcional): exige chaves próprias do Google e configurá-las na seção **Auth** do Supabase
+3. **Mesclar clientes duplicados (importante!)** — painel → **SQL Editor**:
+   - Se um aluno comprar e depois, ao refazer login, perder o acesso (cadeado fechado), é porque existem **dois registros de cliente com o mesmo e-mail**. Rode o arquivo `supabase/migrations/20260908090000_merge_duplicate_clients.sql` para unir os duplicados (as compras são transferidas para o registro principal)
+4. **ReCAPTCHA** (opcional): exige chaves próprias do Google e configurá-las na seção **Auth** do Supabase
 
 ## A.11 Problemas comuns (administrador)
 
@@ -169,6 +171,12 @@ Na lateral (menu) você tem:
 2. Clique em **Entrar** → vai para a **Home**
 
 > Se o aluno digitar a senha errada, aparece "E-mail ou senha incorretos. Verifique seus dados ou crie uma conta."
+
+## B.11 Trocar ou recuperar a senha
+
+- **Trocar senha**: no menu lateral do app, **"Alterar senha"** → informe a nova senha (mín. 6) e salve. Funciona para quem usa **e-mail + senha** (quem entrar só por "e-mail simples" precisa logar com senha antes)
+- **Esqueci a senha**: no login, aba "E-mail + senha" → **"Esqueci minha senha"** → informe o e-mail. Chegará um link de recuperação; ao abrir, o app pede a nova senha
+- Se o e-mail de recuperação não chegar, confira spam/promoções
 
 ## B.5 Home e Loja
 
@@ -226,6 +234,7 @@ Pela barra inferior o aluno acessa:
 | Link do e-mail não funciona / volta para a home | Peça ao admin para conferir **URL Configuration** no Supabase (item A.10) |
 | Erro ao pagar | Confirme os dados do cartão; em teste, o site precisa estar em **modo teste** |
 | Comprei, o produto deixou de ter cadeado, mas ao abrir vai de volta para a Home | Antes corrigido, pode ser cache/republicação pendente — **atualize a página**; se persistir, peça ao admin para republicar o site (item A.11) |
+| Cadeado fechado na home mesmo depois de comprar (após refazer login) | Registros duplicados do mesmo e-mail no cadastro — o admin deve rodar a migration `20260908090000_merge_duplicate_clients.sql` (item A.10.3) |
 | Aula/PDF não abre depois do pagamento | Recarregue a página; se persistir, reporte o texto do erro (F12 → Console) ao admin |
 | PDF dá "Não foi possível renderizar o PDF" ou download com `NoSuchKey` (404) | O arquivo não existe mais no servidor — o admin deve **reenviar o arquivo** no módulo/aula (item A.11) |
 | Vídeo não toca | Confirme que o produto foi comprado e atualize a página; se persistir, o admin verifica o link/tipo do vídeo (`vturb`/`.m3u8`) |
@@ -242,4 +251,5 @@ Pela barra inferior o aluno acessa:
 - [ ] Stripe em **modo live** com chave `sk_live_...` + **webhook** configurado
 - [ ] Supabase: **Confirm email** ativado + **URL Configuration** preenchida
 - [ ] Migration RLS aplicada no **SQL Editor** (clientes no painel)
-- [ ] Teste E2E: criar conta → verificar e-mail → **comprar com cartão de teste** → abrir e baixar uma aula
+- [ ] Migration de clientes duplicados aplicada no **SQL Editor** (acesso estável pós-login)
+- [ ] Teste E2E: criar conta → verificar e-mail → **comprar com cartão de teste** → abrir e baixar uma aula → sair e **entrar de novo (cadeado deve continuar aberto)**
