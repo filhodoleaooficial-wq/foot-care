@@ -325,26 +325,14 @@ const VivaBemProduct = () => {
         const client = getClientSession();
         let allowed = false;
         if (client) {
-          // Check one-time purchase first
-          const { data: purch } = await supabase
-            .from("product_purchases")
-            .select("id")
-            .eq("client_id", client.id)
-            .eq("product_id", productId)
-            .eq("status", "paid")
-            .maybeSingle();
-          allowed = !!purch;
-
-          // If not purchased and product is recurring, check active subscription
-          if (!allowed && prod?.recurring) {
-            const { data: sub } = await supabase
-              .from("subscriptions")
-              .select("id")
-              .eq("client_id", client.id)
-              .eq("product_id", productId)
-              .in("status", ["active", "trialing"])
-              .maybeSingle();
-            allowed = !!sub;
+          // Check access via service-role edge function (one-time purchases + active subscriptions)
+          const { data: accessData, error: accessError } = await supabase.functions.invoke("list-purchases", {
+            body: { clientId: client.id, productId },
+          });
+          if (accessError) {
+            console.error("Access check error:", accessError);
+          } else {
+            allowed = ((accessData?.productIds as string[]) || []).includes(productId);
           }
         }
         if (!allowed) {

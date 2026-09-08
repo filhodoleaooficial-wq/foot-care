@@ -23,17 +23,33 @@ serve(async (req) => {
     const productId = body?.productId ? String(body.productId) : null;
     if (!clientId) throw new Error("clientId is required");
 
-    let query = supabase
+    // One-time purchases paid
+    let purchQuery = supabase
       .from("product_purchases")
       .select("product_id")
       .eq("client_id", clientId)
       .eq("status", "paid");
-    if (productId) query = query.eq("product_id", productId);
+    if (productId) purchQuery = purchQuery.eq("product_id", productId);
 
-    const { data, error } = await query;
-    if (error) throw error;
+    // Active/trialing subscriptions
+    let subQuery = supabase
+      .from("subscriptions")
+      .select("product_id")
+      .eq("client_id", clientId)
+      .in("status", ["active", "trialing"]);
+    if (productId) subQuery = subQuery.eq("product_id", productId);
 
-    const productIds = (data ?? []).map((r: any) => r.product_id);
+    const [purchRes, subRes] = await Promise.all([purchQuery, subQuery]);
+    if (purchRes.error) throw purchRes.error;
+    if (subRes.error) throw subRes.error;
+
+    const productIds = Array.from(
+      new Set([
+        ...(purchRes.data ?? []).map((r: any) => r.product_id),
+        ...(subRes.data ?? []).map((r: any) => r.product_id),
+      ])
+    );
+
     return new Response(JSON.stringify({ productIds }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
