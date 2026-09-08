@@ -26,7 +26,7 @@ WHERE c.id <> k.keeper_id;
 UPDATE app_clients k
 SET user_id = COALESCE(k.user_id, d.uid)
 FROM (
-  SELECT x.keeper_id, max(c.user_id) AS uid
+  SELECT x.keeper_id, (array_agg(c.user_id))[1] AS uid
   FROM _dupe x JOIN app_clients c ON c.id = x.dup_id
   WHERE c.user_id IS NOT NULL
   GROUP BY x.keeper_id
