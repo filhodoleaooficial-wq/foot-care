@@ -429,8 +429,8 @@ const VivaBemProduct = () => {
           const modLessons = lessonsForModule(mod.id);
           const isOpen = expandedModule === mod.id;
 
-          // If module has open_directly and content, show it directly
-          if (mod.open_directly && (mod.content_url || mod.content_html)) {
+          // If module has open_directly and content (and no lessons), show content directly
+          if (mod.open_directly && (mod.content_url || mod.content_html) && modLessons.length === 0) {
             return (
               <div key={mod.id} className="rounded-xl border border-border bg-card overflow-hidden">
                 <button onClick={() => setExpandedModule(isOpen ? null : mod.id)} className="w-full flex items-center justify-between p-4">
