@@ -203,6 +203,8 @@ const VivaBemHome = () => {
     if (!app) return;
     const fetchData = async () => {
       const client = getClientSession();
+      const { data: authData } = await supabase.auth.getSession();
+      const userId = authData.session?.user?.id;
       const [prodRes, secRes, purchRes, bannerRes] = await Promise.all([
         supabase
           .from("products")
@@ -217,7 +219,9 @@ const VivaBemHome = () => {
           .eq("is_active", true)
           .order("sort_order"),
         client
-          ? supabase.functions.invoke("list-purchases", { body: { clientId: client.id } })
+          ? supabase.functions.invoke("list-purchases", {
+              body: { clientId: client.id, email: client.email, userId },
+            })
           : Promise.resolve({ data: { productIds: [] as string[] } }),
         supabase
           .from("banners")

@@ -20,14 +20,38 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const clientId = String(body?.clientId ?? "");
+    const email = String(body?.email ?? "").trim().toLowerCase();
+    const userId = String(body?.userId ?? "");
     const productId = body?.productId ? String(body.productId) : null;
-    if (!clientId) throw new Error("clientId is required");
+    if (!clientId && !email && !userId) throw new Error("clientId is required");
+
+    // Resolve every app_clients.id linked to this person:
+    // - the stored client id (legacy localStorage session)
+    // - any client with the same e-mail (covers duplicate records)
+    // - any client with the same auth user id (covers purchases made under other records)
+    const candidates = new Set<string>();
+    if (clientId) candidates.add(clientId);
+
+    const emailOrUserRes = await supabase
+      .from("app_clients")
+      .select("id")
+      .or(email && userId
+        ? `email.eq.${email},user_id.eq.${userId}`
+        : email
+          ? `email.eq.${email}`
+          : `user_id.eq.${userId}`)
+      .limit(50);
+    if (emailOrUserRes.error) throw emailOrUserRes.error;
+    for (const row of emailOrUserRes.data ?? []) candidates.add(row.id);
+
+    const ids = Array.from(candidates);
+    if (ids.length === 0) throw new Error("Nenhum cliente encontrado");
 
     // One-time purchases paid
     let purchQuery = supabase
       .from("product_purchases")
       .select("product_id")
-      .eq("client_id", clientId)
+      .in("client_id", ids)
       .eq("status", "paid");
     if (productId) purchQuery = purchQuery.eq("product_id", productId);
 
@@ -35,7 +59,7 @@ serve(async (req) => {
     let subQuery = supabase
       .from("subscriptions")
       .select("product_id")
-      .eq("client_id", clientId)
+      .in("client_id", ids)
       .in("status", ["active", "trialing"]);
     if (productId) subQuery = subQuery.eq("product_id", productId);
 

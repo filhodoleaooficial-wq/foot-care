@@ -9,6 +9,8 @@ import ClientProtectedRoute from "@/components/ClientProtectedRoute";
 import QuizPage from "./pages/QuizPage";
 import VivaBemLogin from "./pages/VivaBemLogin";
 import VivaBemRegister from "./pages/VivaBemRegister";
+import VivaBemChangePassword from "./pages/VivaBemChangePassword";
+import VivaBemResetPassword from "./pages/VivaBemResetPassword";
 import VivaBemLayout from "./pages/VivaBemLayout";
 import VivaBemHome from "./pages/VivaBemHome";
 import VivaBemProduct from "./pages/VivaBemProduct";
@@ -61,6 +63,7 @@ const App = () => (
             {/* Client login */}
             <Route path="/login" element={<VivaBemLogin />} />
             <Route path="/register" element={<VivaBemRegister />} />
+            <Route path="/recuperar-senha" element={<VivaBemResetPassword />} />
 
             {/* Payment result pages */}
             <Route path="/payment-success" element={<PaymentSuccess />} />
@@ -80,6 +83,7 @@ const App = () => (
               <Route path="/profissionais" element={<ProfessionalsPage />} />
               <Route path="/profissionais/cadastro" element={<ProfessionalRegisterPage />} />
               <Route path="/imc" element={<IMCPage />} />
+              <Route path="/alterar-senha" element={<VivaBemChangePassword />} />
             </Route>
 
             {/* Dynamic client app routes (shareable link) */}

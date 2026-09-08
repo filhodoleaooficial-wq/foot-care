@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen, LogOut, Menu, X, HeartPulse, UserPlus, Calculator } from "lucide-react";
+import { Home, MessageCircle, FileText, Star, Download, Search, ChevronLeft, ChevronRight, ShoppingBag, BookOpen, LogOut, Menu, X, HeartPulse, UserPlus, Calculator, KeyRound } from "lucide-react";
 import { clearClientSession } from "@/lib/client-session";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppConfig } from "@/contexts/AppConfigContext";
 
@@ -17,6 +18,7 @@ const menuItems = [
   { icon: Star, label: "Módulos salvos", path: "/salvos" },
   { icon: Download, label: "Instalar App", path: "/instalar" },
   { icon: Search, label: "Pesquisar", path: "/pesquisar" },
+  { icon: KeyRound, label: "Alterar senha", path: "/alterar-senha" },
 ];
 
 interface VivaBemSidebarProps {
@@ -150,8 +152,9 @@ const VivaBemSidebar = ({ points = 78, onToggle }: VivaBemSidebarProps) => {
 
         {/* Logout */}
         <button
-          onClick={() => {
+          onClick={async () => {
             clearClientSession();
+            await supabase.auth.signOut();
             navigate("/login");
           }}
           className="mx-2 mb-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white transition-colors"

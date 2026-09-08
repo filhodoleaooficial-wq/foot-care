@@ -215,6 +215,15 @@ const VivaBemLogin = () => {
               >
                 {loading ? "Entrando..." : "Entrar"}
               </Button>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => navigate("/recuperar-senha")}
+                  className="text-sm text-muted-foreground hover:underline"
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
             </form>
           ) : (
             <form onSubmit={handleSimpleLogin} className="space-y-5">

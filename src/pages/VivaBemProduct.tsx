@@ -327,8 +327,9 @@ const VivaBemProduct = () => {
         let allowed = false;
         if (client) {
           // Check access via service-role edge function (one-time purchases + active subscriptions)
+          const { data: authData } = await supabase.auth.getSession();
           const { data: accessData, error: accessError } = await supabase.functions.invoke("list-purchases", {
-            body: { clientId: client.id, productId },
+            body: { clientId: client.id, email: client.email, userId: authData.session?.user?.id, productId },
           });
           if (accessError) {
             console.error("Access check error:", accessError);
