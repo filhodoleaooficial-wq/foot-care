@@ -64,6 +64,8 @@ Na lateral (menu) você tem:
    - Para **assinatura mensal**, o preço do Stripe deve ser **recorrente** → senão dá erro: *"You must provide at least one recurring price in subscription mode"*
    - Depois de criado, o botão do aluno mostrará "Assinar por R$ X/mês" ou "Comprar por R$ X"
 
+> **Produto gratuito/bônus:** deixe o campo **Valor vazio ou 0** → o produto fica **sem cadeado para todos** (não precisa de compra nem do Stripe). Ex.: o bônus *Cuidados Especiais* está assim, com `offer_type = bonus` e preço 0.
+
 ### Configurando o Stripe (uma vez)
 1. Crie uma conta em [stripe.com](https://stripe.com)
 2. **Em modo de teste**, as chaves começam com `sk_test_` / `pk_test_`; para cobrar de verdade, **ativo** o modo live e as chaves começam com `sk_live_` / `pk_live_`
