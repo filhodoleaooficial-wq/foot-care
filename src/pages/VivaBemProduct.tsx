@@ -191,6 +191,11 @@ const PdfViewer = ({ url }: { url: string }) => {
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
+  useEffect(() => {
+    containerRef.current?.scrollIntoView({ block: "start" });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [pageNumber, numPages]);
+
   if (error) {
     return (
       <div className="rounded-xl border border-border bg-card p-8 flex flex-col items-center gap-4">
