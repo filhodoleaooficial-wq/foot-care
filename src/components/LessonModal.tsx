@@ -233,7 +233,7 @@ const LessonModal = ({ open, onOpenChange, moduleId, userId, onLessonCreated, ex
                 {contentUrl ? "Arquivo enviado ✓" : "Selecionar Arquivo"}
               </Button>
               {contentUrl && <p className="text-xs text-muted-foreground truncate">{contentUrl}</p>}
-              <p className="text-xs text-muted-foreground">Máximo: 500MB</p>
+              <p className="text-xs text-muted-foreground">Máximo: 100MB por arquivo (limite do plano gratuito do Supabase)</p>
             </div>
           )}
 
