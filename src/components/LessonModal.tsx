@@ -234,6 +234,13 @@ const LessonModal = ({ open, onOpenChange, moduleId, userId, onLessonCreated, ex
               </Button>
               {contentUrl && <p className="text-xs text-muted-foreground truncate">{contentUrl}</p>}
               <p className="text-xs text-muted-foreground">Máximo: 100MB por arquivo (limite do plano gratuito do Supabase)</p>
+              {contentType === "audio" && (
+                <div className="space-y-2 pt-3 border-t border-border">
+                  <Label>Ou cole a URL do áudio (link externo)</Label>
+                  <Input value={contentUrl} onChange={(e) => setContentUrl(e.target.value)} placeholder="https://audio.jukehost.co.uk/..." />
+                  <p className="text-xs text-muted-foreground">Para MP3 fora do Supabase (JukeHost, sua VPS, etc). Basta colar o link.</p>
+                </div>
+              )}
             </div>
           )}
 

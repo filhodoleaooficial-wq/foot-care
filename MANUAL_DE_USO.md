@@ -87,7 +87,7 @@ Na lateral (menu) você tem:
 3. O conteúdo pode ficar **no módulo** (ex.: PDF direto) ou **dentro das aulas**:
    - **Vídeo** (MP4 ou HLS `.m3u8`) → o aluno assiste **e pode baixar** no player
    - **Vídeo hospedado** com tipo `vturb` (ex.: link do Gumlet, `.m3u8`) → também toca e baixa no player
-   - **Áudio** → o aluno ouve **e pode baixar**
+   - **Áudio** → o aluno ouve **e pode baixar**. Também aceita **URL externa** (ex.: `https://audio.jukehost.co.uk/...` ou MP3 da sua VPS) — basta colar o link no campo "Ou cole a URL do áudio"
    - **PDF / arquivo** → o aluno abre **e pode baixar** (botão "Baixar PDF")
 4. Organize a ordem de exibição; quando o aluno comprar o produto, as aulas são liberadas com **download habilitado**
 5. **Importante — arquivos no servidor:** ao salvar, o conteúdo é enviado ao storage do Supabase e o link é gravado. Se depois o arquivo for apagado/estiver quebrado, o aluno vê "Não foi possível renderizar o PDF" e o download dá `Object not found (NoSuchKey)`. Nesse caso **reenvie o arquivo** (editar módulo/aula → anexar de novo → salvar) para gerar um novo link válido.
